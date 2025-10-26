@@ -320,23 +320,4 @@ Exported 1 file(s), skipped 0 file(s)
 5. **Flexibility:** Can still use format-specific commands when needed
 6. **No Conflicts:** Double extension naming preserves both PDFs
 
-## Alternative Approaches Considered:
-
-**For unified command:**
-- Creating separate QMD files for each format - Rejected (maintenance burden, sync issues)
-- Calling both `new-pptx` and `new-docx` - Rejected (naming conflicts)
-
-**For PDF naming:**
-- Suffix naming (`file-pptx.pdf`, `file-docx.pdf`) - Rejected as less clear
-- Subdirectories (`pdf/pptx/file.pdf`) - Rejected as too complex
-- Last wins (accept overwrite) - Rejected as loses data
-- Smart detection (only export "primary") - Rejected as too magical
-
-## Future Considerations:
-
-- Could add a `--naming` flag to allow users to choose between conventions
-- Could add a config file option for naming preference
-- Consider adding `--format` flag to `new` command to specify which formats to include
-- Could add validation to ensure both templates exist before creating unified document
-
 **Status:** Implemented (q4s-41 for unified command, q4s-42 for double extension naming)

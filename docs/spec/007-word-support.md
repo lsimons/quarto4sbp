@@ -321,4 +321,4 @@ fi
 - **Word:** `new-docx`, `pdf-docx`, `simple-document.*`
 - **Unified:** `pdf` (calls both `pdf-pptx` and `pdf-docx`), `render.sh` (works for both formats)
 
-**Status:** Not yet implemented
+**Status:** Implemented
