@@ -86,14 +86,14 @@ class TestMain(unittest.TestCase):
             sys.stdout = old_stdout
             sys.stderr = old_stderr
 
-    def test_pdf_command(self) -> None:
-        """Test pdf command integration."""
+    def test_pdf_pptx_command(self) -> None:
+        """Test pdf-pptx command integration."""
         with TemporaryDirectory() as tmpdir:
             old_stdout = sys.stdout
             sys.stdout = StringIO()
 
             try:
-                result = main(["pdf", tmpdir])
+                result = main(["pdf-pptx", tmpdir])
                 output = sys.stdout.getvalue()
 
                 self.assertEqual(result, 0)

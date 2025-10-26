@@ -1,4 +1,4 @@
-"""PDF command for q4s CLI."""
+"""PDF export command for PowerPoint files."""
 
 import subprocess
 from pathlib import Path
@@ -101,8 +101,8 @@ end tell
         return False
 
 
-def cmd_pdf(args: list[str]) -> int:
-    """Handle the pdf subcommand.
+def cmd_pdf_pptx(args: list[str]) -> int:
+    """Handle the pdf-pptx subcommand.
 
     Args:
         args: Optional directory argument (defaults to current directory)

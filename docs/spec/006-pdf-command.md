@@ -1,9 +1,9 @@
-# 006 - PDF Command
+# 006 - PDF PowerPoint Command
 
-**Purpose:** Add a `q4s pdf` command to automatically export PowerPoint presentations to PDF when PPTX files are newer than their PDF counterparts
+**Purpose:** Add a `q4s pdf-pptx` command to automatically export PowerPoint presentations to PDF when PPTX files are newer than their PDF counterparts
 
 **Requirements:**
-- `q4s pdf` command to find and export PPTX files to PDF
+- `q4s pdf-pptx` command to find and export PPTX files to PDF
 - Scan current directory for `.pptx` files
 - Export PPTX to PDF if:
   - No corresponding PDF exists, OR
@@ -24,15 +24,15 @@
 ```
 quarto4sbp/
   commands/
-    pdf.py              # cmd_pdf() implementation
+    pdf_pptx.py         # cmd_pdf_pptx() implementation (renamed from pdf.py)
 tests/
   commands/
-    test_pdf.py         # Unit tests (file discovery, temp folder logic)
-    test_pdf_integration.py  # Integration tests (actual PowerPoint export)
+    test_pdf_pptx.py    # Unit tests (renamed from test_pdf.py)
+    test_pdf_pptx_integration.py  # Integration tests (renamed from test_pdf_integration.py)
 ```
 
 **API Design:**
-- `cmd_pdf(args: list[str]) -> int` - Handle pdf subcommand
+- `cmd_pdf_pptx(args: list[str]) -> int` - Handle pdf-pptx subcommand
   - Takes optional directory argument (defaults to current directory)
   - Returns 0 on success, 1 on error
 - `find_stale_pptx(directory: Path) -> list[Path]` - Find PPTX files needing export
@@ -77,7 +77,7 @@ end tell
   - Verify PDF is created with correct content
   - Test error handling when PowerPoint is not available
   - Marked with `@unittest.skipUnless` decorator checking for `RUN_INTEGRATION_TESTS` env var
-  - Document in README how to run: `RUN_INTEGRATION_TESTS=1 uv run pytest tests/commands/test_pdf_integration.py`
+  - Document in README how to run: `RUN_INTEGRATION_TESTS=1 uv run pytest tests/commands/test_pdf_pptx_integration.py`
 
 **CI Configuration:**
 - Default pytest run (in `.github/workflows/`) does NOT set `RUN_INTEGRATION_TESTS`

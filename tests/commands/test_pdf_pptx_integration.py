@@ -1,10 +1,10 @@
-"""Integration tests for pdf command (requires PowerPoint).
+"""Integration tests for pdf-pptx command (requires Microsoft PowerPoint).
 
 These tests are skipped by default and only run when RUN_INTEGRATION_TESTS
 environment variable is set.
 
 To run these tests:
-    RUN_INTEGRATION_TESTS=1 uv run pytest tests/commands/test_pdf_integration.py -v
+    RUN_INTEGRATION_TESTS=1 uv run pytest tests/commands/test_pdf_pptx_integration.py -v
 """
 
 import os
@@ -15,7 +15,7 @@ from io import StringIO
 from pathlib import Path
 from time import sleep
 
-from quarto4sbp.commands.pdf import cmd_pdf, export_pptx_to_pdf
+from quarto4sbp.commands.pdf_pptx import cmd_pdf_pptx, export_pptx_to_pdf
 
 # Check if integration tests should run
 RUN_INTEGRATION_TESTS = os.environ.get("RUN_INTEGRATION_TESTS", "0") == "1"
@@ -100,7 +100,7 @@ class TestPdfIntegration(unittest.TestCase):
         self.assertGreater(pdf_path.stat().st_mtime, test_pptx.stat().st_mtime)
 
         # find_stale_pptx should not include this file
-        from quarto4sbp.commands.pdf import find_stale_pptx
+        from quarto4sbp.commands.pdf_pptx import find_stale_pptx
 
         stale = find_stale_pptx(self.test_dir)
         self.assertEqual(len(stale), 0, "PDF is up to date, should not be stale")
@@ -126,7 +126,7 @@ class TestPdfIntegration(unittest.TestCase):
         self.assertGreater(test_pptx.stat().st_mtime, pdf_path.stat().st_mtime)
 
         # find_stale_pptx should include this file
-        from quarto4sbp.commands.pdf import find_stale_pptx
+        from quarto4sbp.commands.pdf_pptx import find_stale_pptx
 
         stale = find_stale_pptx(self.test_dir)
         self.assertEqual(len(stale), 1, "PPTX is newer, should be stale")
@@ -144,7 +144,7 @@ class TestPdfIntegration(unittest.TestCase):
         old_stdout = sys.stdout
         sys.stdout = StringIO()
         try:
-            result = cmd_pdf([str(self.test_dir)])
+            result = cmd_pdf_pptx([str(self.test_dir)])
             output = sys.stdout.getvalue()
 
             self.assertEqual(result, 0, "Command should succeed")
@@ -171,7 +171,7 @@ class TestPdfIntegration(unittest.TestCase):
         old_stdout = sys.stdout
         sys.stdout = StringIO()
         try:
-            result = cmd_pdf([str(self.test_dir)])
+            result = cmd_pdf_pptx([str(self.test_dir)])
             output = sys.stdout.getvalue()
 
             self.assertEqual(result, 0)
@@ -188,7 +188,7 @@ class TestPdfIntegration(unittest.TestCase):
         old_stdout = sys.stdout
         sys.stdout = StringIO()
         try:
-            result = cmd_pdf([str(self.test_dir)])
+            result = cmd_pdf_pptx([str(self.test_dir)])
             output = sys.stdout.getvalue()
 
             self.assertEqual(result, 0)
