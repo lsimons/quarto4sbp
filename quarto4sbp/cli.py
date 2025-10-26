@@ -3,7 +3,15 @@
 import argparse
 import sys
 
-from quarto4sbp.commands import cmd_echo, cmd_help, cmd_new_pptx, cmd_pdf_pptx
+from quarto4sbp.commands import (
+    cmd_echo,
+    cmd_help,
+    cmd_new_doc,
+    cmd_new_pptx,
+    cmd_pdf,
+    cmd_pdf_doc,
+    cmd_pdf_pptx,
+)
 
 
 def main(args: list[str] | None = None) -> int:
@@ -24,7 +32,7 @@ def main(args: list[str] | None = None) -> int:
     parser.add_argument(
         "command",
         nargs="?",
-        help="Command to run (help, echo, new-pptx, pdf-pptx)",
+        help="Command to run (help, echo, new-pptx, new-doc, pdf, pdf-pptx, pdf-doc)",
     )
 
     parser.add_argument(
@@ -49,8 +57,14 @@ def main(args: list[str] | None = None) -> int:
         return cmd_echo(command_args)
     elif command == "new-pptx":
         return cmd_new_pptx(command_args)
+    elif command == "new-doc":
+        return cmd_new_doc(command_args)
+    elif command == "pdf":
+        return cmd_pdf(command_args)
     elif command == "pdf-pptx":
         return cmd_pdf_pptx(command_args)
+    elif command == "pdf-doc":
+        return cmd_pdf_doc(command_args)
     else:
         print(f"Error: Unknown command '{command}'", file=sys.stderr)
         print("Run 'q4s help' for usage information", file=sys.stderr)

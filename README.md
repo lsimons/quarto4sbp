@@ -6,6 +6,11 @@ A lightweight tool for working with quarto in Schuberg Philis Context.
 
 - **Python 3.13+** with `uv` package manager: try `brew install uv` on mac
 - [quarto](https://quarto.org/) CLI installed: try `brew install quarto` on mac
+- **Microsoft Office** (for PDF export):
+  - **Microsoft PowerPoint** - required for `pdf-pptx` command
+  - **Microsoft Word** - required for `pdf-doc` command
+  - Note: The unified `pdf` command requires both applications
+  - macOS only: PDF export uses AppleScript to automate Office applications
 
 ## Installation
 
@@ -58,7 +63,7 @@ uv run q4s help
 
 ### q4s CLI Tool
 
-The `q4s` CLI provides simple utilities for working with quarto in Schuberg Philis context.
+The `q4s` CLI provides utilities for working with Quarto presentations and documents.
 
 **Available Commands:**
 
@@ -68,25 +73,94 @@ q4s help
 
 # Echo back arguments (useful for testing)
 q4s echo hello world
+
+# Create new PowerPoint presentation
+q4s new-pptx <directory>
+
+# Create new Word document
+q4s new-doc <directory>
+
+# Export all Office documents to PDF
+q4s pdf
+
+# Export only PowerPoint files to PDF
+q4s pdf-pptx
+
+# Export only Word documents to PDF
+q4s pdf-doc
 ```
 
 **Examples:**
 
+#### Creating New Documents
+
 ```bash
-# Display help message
-$ q4s help
-q4s - quarto4sbp CLI tool
+# Create a new PowerPoint presentation
+$ q4s new-pptx my-presentation
+Created: my-presentation/my-presentation.qmd
+Hint: Run 'cd my-presentation && ./render.sh' to generate the presentation
 
-Usage: q4s <command> [arguments]
-
-Available commands:
-  help       Show this help message
-  echo       Echo back the command-line arguments
-
-# Echo command
-$ q4s echo hello world
-hello world
+# Create a new Word document
+$ q4s new-doc my-document
+Created: my-document/my-document.qmd
+Hint: Run 'cd my-document && ./render.sh' to generate the document
 ```
+
+#### Rendering Documents
+
+Each created document includes a `render.sh` script that:
+1. Renders the Quarto file (`.qmd`) to Office format (`.pptx` or `.docx`)
+2. Exports the Office file to PDF
+
+```bash
+# Render and export a presentation
+cd my-presentation
+./render.sh
+
+# Render and export a document
+cd my-document
+./render.sh
+```
+
+#### PDF Export Commands
+
+```bash
+# Export all Office documents in current directory
+$ q4s pdf
+=== Exporting PowerPoint files ===
+Found 1 file(s) to export:
+  - presentation.pptx
+Exporting: presentation.pptx -> presentation.pdf
+Exported 1 file(s), skipped 0 file(s)
+
+=== Exporting Word documents ===
+Found 1 file(s) to export:
+  - document.docx
+Exporting: document.docx -> document.pdf
+Exported 1 file(s), skipped 0 file(s)
+
+✓ All exports completed successfully
+
+# Export only PowerPoint files
+$ q4s pdf-pptx
+Found 1 file(s) to export:
+  - presentation.pptx
+Exporting: presentation.pptx -> presentation.pdf
+Exported 1 file(s), skipped 0 file(s)
+
+# Export only Word documents
+$ q4s pdf-doc
+Found 1 file(s) to export:
+  - document.docx
+Exporting: document.docx -> document.pdf
+Exported 1 file(s), skipped 0 file(s)
+```
+
+**PDF Export Behavior:**
+- Only exports files that are newer than their corresponding PDFs
+- Skips symlinks and template files
+- Works in the current directory (non-recursive)
+- Requires Microsoft PowerPoint/Word to be installed on macOS
 
 **Note:** If you haven't installed the shim, use `uv run q4s` instead of `q4s`.
 

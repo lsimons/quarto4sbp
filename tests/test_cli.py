@@ -101,6 +101,58 @@ class TestMain(unittest.TestCase):
             finally:
                 sys.stdout = old_stdout
 
+    def test_new_doc_command(self) -> None:
+        """Test new-doc command integration."""
+        with TemporaryDirectory() as tmpdir:
+            import os
+
+            old_cwd = os.getcwd()
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+
+            try:
+                os.chdir(tmpdir)
+                result = main(["new-doc", "test-doc"])
+                output = sys.stdout.getvalue()
+
+                self.assertEqual(result, 0)
+                self.assertIn("Created: test-doc/test-doc.qmd", output)
+            finally:
+                os.chdir(old_cwd)
+                sys.stdout = old_stdout
+
+    def test_pdf_doc_command(self) -> None:
+        """Test pdf-doc command integration."""
+        with TemporaryDirectory() as tmpdir:
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+
+            try:
+                result = main(["pdf-doc", tmpdir])
+                output = sys.stdout.getvalue()
+
+                self.assertEqual(result, 0)
+                self.assertIn("No DOCX files need exporting", output)
+            finally:
+                sys.stdout = old_stdout
+
+    def test_pdf_command(self) -> None:
+        """Test unified pdf command integration."""
+        with TemporaryDirectory() as tmpdir:
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+
+            try:
+                result = main(["pdf", tmpdir])
+                output = sys.stdout.getvalue()
+
+                self.assertEqual(result, 0)
+                self.assertIn("=== Exporting PowerPoint files ===", output)
+                self.assertIn("=== Exporting Word documents ===", output)
+                self.assertIn("✓ All exports completed successfully", output)
+            finally:
+                sys.stdout = old_stdout
+
 
 class TestCLIIntegration(unittest.TestCase):
     """Integration tests for the q4s CLI."""
@@ -145,6 +197,33 @@ class TestCLIIntegration(unittest.TestCase):
         self.assertIn("q4s", result.stdout)
         self.assertIn("help", result.stdout)
         self.assertIn("echo", result.stdout)
+
+    def test_cli_new_doc(self) -> None:
+        """Test CLI new-doc command via subprocess."""
+        import shutil
+        import tempfile
+        from pathlib import Path
+
+        # Create a temporary directory for the test
+        temp_dir = tempfile.mkdtemp()
+        try:
+            result = subprocess.run(
+                ["uv", "run", "q4s", "new-doc", "test-doc"],
+                capture_output=True,
+                text=True,
+                check=False,
+                cwd=temp_dir,
+            )
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("Created: test-doc/test-doc.qmd", result.stdout)
+            self.assertIn("Hint: Run 'cd test-doc && ./render.sh'", result.stdout)
+
+            # Verify files were created
+            qmd_file = Path(temp_dir) / "test-doc" / "test-doc.qmd"
+            self.assertTrue(qmd_file.exists())
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
     def test_cli_echo(self) -> None:
         """Test CLI echo via subprocess."""
