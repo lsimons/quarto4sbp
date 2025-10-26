@@ -2,9 +2,6 @@
 title: "Your Presentation Title"
 subtitle: "Your subtitle here"
 author: "Your Name"
-mainfont: Merriweather
-sansfont: Merriweather Sans
-monofont: Cascadia Code
 format:
   pptx:
     reference-doc: simple-presentation.pptx
