@@ -106,7 +106,7 @@ class TestCLIIntegration(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0)
             self.assertIn("Created: test-pres/test-pres.qmd", result.stdout)
-            self.assertIn("Hint: Run 'q4s render", result.stdout)
+            self.assertIn("Hint: Run 'cd test-pres && ./render.sh'", result.stdout)
 
             # Verify files were created
             qmd_file = Path(temp_dir) / "test-pres" / "test-pres.qmd"

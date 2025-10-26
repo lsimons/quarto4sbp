@@ -66,7 +66,7 @@ class TestCmdNew(unittest.TestCase):
 
         self.assertEqual(result, 0)
         self.assertIn("Created: test-presentation/test-presentation.qmd", stdout_output)
-        self.assertIn("Hint: Run 'q4s render", stdout_output)
+        self.assertIn("Hint: Run 'cd test-presentation && ./render.sh'", stdout_output)
 
         # Verify directory exists
         target_dir = Path("test-presentation")
@@ -90,6 +90,24 @@ class TestCmdNew(unittest.TestCase):
         # Don't fail test if symlink creation is not supported
         if symlink.exists():
             self.assertTrue(symlink.is_symlink() or symlink.is_file())
+
+        # Verify render.sh script exists
+        render_script = target_dir / "render.sh"
+        self.assertTrue(render_script.exists())
+        self.assertTrue(render_script.is_file())
+
+        # Verify render.sh is executable
+        import stat
+
+        file_stat = render_script.stat()
+        self.assertTrue(file_stat.st_mode & stat.S_IXUSR)
+
+        # Verify render.sh content
+        render_content = render_script.read_text()
+        self.assertIn("quarto render", render_content)
+        self.assertIn('PRESENTATION_NAME="test-presentation"', render_content)
+        self.assertIn("${PRESENTATION_NAME}.qmd", render_content)
+        self.assertIn("#!/bin/sh", render_content)
 
     def test_new_directory_already_exists(self) -> None:
         """Test new command when directory already exists but qmd doesn't."""

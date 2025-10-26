@@ -1,0 +1,17 @@
+#!/bin/sh
+# Render script for Quarto presentation
+# This script renders the .qmd file to PowerPoint format
+
+set -e
+
+PRESENTATION_NAME="{{PRESENTATION_NAME}}"
+
+echo "Rendering ${PRESENTATION_NAME}.qmd to PowerPoint..."
+quarto render "${PRESENTATION_NAME}.qmd"
+
+if [ $? -eq 0 ]; then
+    echo "✓ Successfully created ${PRESENTATION_NAME}.pptx"
+else
+    echo "✗ Rendering failed"
+    exit 1
+fi

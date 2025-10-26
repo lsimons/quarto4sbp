@@ -8,8 +8,9 @@
 - Generate `.qmd` file named same as directory inside the directory
 - Create symlink to `templates/simple-presentation.pptx` in the new directory
 - Template based on `templates/simple-presentation.qmd` (inspired by `examples/caseum/introduction.qmd`)
+- Create `render.sh` script in the new directory to run `quarto render`
 - Output path to created `.qmd` file
-- Print hint to run `q4s render` (future command)
+- Print hint to run `./render.sh` to generate the presentation
 - Proper error handling for existing files and invalid paths
 
 **Design Approach:**
@@ -27,6 +28,7 @@ quarto4sbp/
 templates/
   simple-presentation.qmd   # Template file (new)
   simple-presentation.pptx  # PowerPoint template (exists)
+  render.sh.template        # Render script template (new)
 tests/
   commands/
     test_new.py         # Unit tests for new command
@@ -50,8 +52,10 @@ The `templates/simple-presentation.qmd` should include:
 2. Create directory if doesn't exist (error if file exists with same name)
 3. Create `<directory>/<directory>.qmd` from template
 4. Create symlink `<directory>/simple-presentation.pptx` → `../templates/simple-presentation.pptx`
-5. Print: `Created: <directory>/<directory>.qmd`
-6. Print: `Hint: Run 'q4s render <directory>/<directory>.qmd' to generate the presentation`
+5. Create `<directory>/render.sh` from template with presentation name substituted
+6. Make `render.sh` executable
+7. Print: `Created: <directory>/<directory>.qmd`
+8. Print: `Hint: Run 'cd <directory> && ./render.sh' to generate the presentation`
 
 **Testing Strategy:**
 - Test successful creation with new directory
@@ -61,6 +65,8 @@ The `templates/simple-presentation.qmd` should include:
 - Test error when directory name is invalid
 - Verify symlink is created correctly
 - Verify template content is copied correctly
+- Verify render.sh script is created and executable
+- Verify render.sh contains correct presentation name
 - Use temporary directories for testing
 
 **Implementation Notes:**
@@ -69,5 +75,7 @@ The `templates/simple-presentation.qmd` should include:
 - Handle Windows compatibility (symlinks may require admin/developer mode)
 - Template file should be readable and documented
 - Follow shared patterns from `000-shared-patterns.md`
+- render.sh template uses `#!/bin/sh` for portability
+- render.sh script should be simple and documented with comments
 
 **Status:** Implemented

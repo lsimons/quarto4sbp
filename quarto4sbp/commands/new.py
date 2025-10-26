@@ -32,12 +32,14 @@ def cmd_new(args: list[str]) -> int:
     base_name = target_dir.name
     qmd_file = target_dir / f"{base_name}.qmd"
     symlink_target = target_dir / "simple-presentation.pptx"
+    render_script = target_dir / "render.sh"
 
     # Find the templates directory relative to this file
     # quarto4sbp/commands/new.py -> quarto4sbp -> project root -> templates
     project_root = Path(__file__).parent.parent.parent
     template_qmd = project_root / "templates" / "simple-presentation.qmd"
     template_pptx = project_root / "templates" / "simple-presentation.pptx"
+    template_render = project_root / "templates" / "render.sh.template"
 
     # Verify template exists
     if not template_qmd.exists():
@@ -47,6 +49,13 @@ def cmd_new(args: list[str]) -> int:
     if not template_pptx.exists():
         print(
             f"Error: PowerPoint template not found at {template_pptx}", file=sys.stderr
+        )
+        return 1
+
+    if not template_render.exists():
+        print(
+            f"Error: Render script template not found at {template_render}",
+            file=sys.stderr,
         )
         return 1
 
@@ -70,6 +79,21 @@ def cmd_new(args: list[str]) -> int:
         print(f"Error: Could not create file '{qmd_file}': {e}", file=sys.stderr)
         return 1
 
+    # Create render.sh script from template
+    try:
+        render_content = template_render.read_text()
+        # Replace placeholder with actual presentation name
+        render_content = render_content.replace("{{PRESENTATION_NAME}}", base_name)
+        render_script.write_text(render_content)
+        # Make it executable
+        render_script.chmod(0o755)
+    except OSError as e:
+        print(
+            f"Error: Could not create render script '{render_script}': {e}",
+            file=sys.stderr,
+        )
+        return 1
+
     # Create symlink to PowerPoint template
     # Use relative path from target_dir to templates/simple-presentation.pptx
     try:
@@ -86,6 +110,6 @@ def cmd_new(args: list[str]) -> int:
 
     # Success output
     print(f"Created: {qmd_file}")
-    print(f"Hint: Run 'q4s render {qmd_file}' to generate the presentation")
+    print(f"Hint: Run 'cd {target_dir} && ./render.sh' to generate the presentation")
 
     return 0
