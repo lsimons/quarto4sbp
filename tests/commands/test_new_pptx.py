@@ -1,4 +1,4 @@
-"""Unit tests for new command."""
+"""Unit tests for new-pptx command."""
 
 import os
 import sys
@@ -8,11 +8,11 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
-from quarto4sbp.commands.new import cmd_new
+from quarto4sbp.commands.new_pptx import cmd_new_pptx
 
 
-class TestCmdNew(unittest.TestCase):
-    """Tests for cmd_new function."""
+class TestCmdNewPptx(unittest.TestCase):
+    """Tests for cmd_new_pptx function."""
 
     def setUp(self) -> None:
         """Set up test fixtures."""
@@ -35,35 +35,35 @@ class TestCmdNew(unittest.TestCase):
         os.chdir(self.original_cwd)
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
-    def test_new_no_args(self) -> None:
-        """Test new command with no arguments."""
+    def test_new_pptx_no_args(self) -> None:
+        """Test new-pptx command with no arguments."""
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
-        result = cmd_new([])
+        result = cmd_new_pptx([])
         stderr_output = sys.stderr.getvalue()
 
         self.assertEqual(result, 1)
         self.assertIn("Error: Directory name required", stderr_output)
-        self.assertIn("Usage: q4s new <directory>", stderr_output)
+        self.assertIn("Usage: q4s new-pptx <directory>", stderr_output)
 
-    def test_new_invalid_directory_name(self) -> None:
-        """Test new command with invalid directory name."""
+    def test_new_pptx_invalid_directory_name(self) -> None:
+        """Test new-pptx command with invalid directory name."""
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
-        result = cmd_new(["-invalid"])
+        result = cmd_new_pptx(["-invalid"])
         stderr_output = sys.stderr.getvalue()
 
         self.assertEqual(result, 1)
         self.assertIn("Error: Invalid directory name", stderr_output)
 
-    def test_new_creates_directory_and_files(self) -> None:
-        """Test new command creates directory, qmd file, and symlink."""
+    def test_new_pptx_creates_directory_and_files(self) -> None:
+        """Test new-pptx command creates directory, qmd file, and symlink."""
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
-        result = cmd_new(["test-presentation"])
+        result = cmd_new_pptx(["test-presentation"])
         stdout_output = sys.stdout.getvalue()
 
         self.assertEqual(result, 0)
@@ -107,21 +107,21 @@ class TestCmdNew(unittest.TestCase):
         # Verify render.sh content
         render_content = render_script.read_text()
         self.assertIn("quarto render", render_content)
-        self.assertIn('PRESENTATION_NAME="test-presentation"', render_content)
-        self.assertIn("${PRESENTATION_NAME}.qmd", render_content)
+        self.assertIn('FILE_NAME="test-presentation"', render_content)
+        self.assertIn("${FILE_NAME}.qmd", render_content)
         self.assertIn("#!/bin/sh", render_content)
         self.assertIn("q4s pdf", render_content)
-        self.assertIn("Successfully created ${PRESENTATION_NAME}.pdf", render_content)
+        self.assertIn("Successfully exported to PDF", render_content)
 
-    def test_new_directory_already_exists(self) -> None:
-        """Test new command when directory already exists but qmd doesn't."""
+    def test_new_pptx_directory_already_exists(self) -> None:
+        """Test new-pptx command when directory already exists but qmd doesn't."""
         # Create directory first
         Path("existing-dir").mkdir()
 
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
-        result = cmd_new(["existing-dir"])
+        result = cmd_new_pptx(["existing-dir"])
         stdout_output = sys.stdout.getvalue()
 
         self.assertEqual(result, 0)
@@ -131,8 +131,8 @@ class TestCmdNew(unittest.TestCase):
         qmd_file = Path("existing-dir/existing-dir.qmd")
         self.assertTrue(qmd_file.exists())
 
-    def test_new_qmd_file_already_exists(self) -> None:
-        """Test new command when qmd file already exists."""
+    def test_new_pptx_qmd_file_already_exists(self) -> None:
+        """Test new-pptx command when qmd file already exists."""
         # Create directory and qmd file
         target_dir = Path("existing-presentation")
         target_dir.mkdir()
@@ -142,7 +142,7 @@ class TestCmdNew(unittest.TestCase):
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
-        result = cmd_new(["existing-presentation"])
+        result = cmd_new_pptx(["existing-presentation"])
         stderr_output = sys.stderr.getvalue()
 
         self.assertEqual(result, 1)
@@ -151,12 +151,12 @@ class TestCmdNew(unittest.TestCase):
         # Verify original content is unchanged
         self.assertEqual(qmd_file.read_text(), "existing content")
 
-    def test_new_with_subdirectory_path(self) -> None:
-        """Test new command with subdirectory in name."""
+    def test_new_pptx_with_subdirectory_path(self) -> None:
+        """Test new-pptx command with subdirectory in name."""
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
-        result = cmd_new(["subdir/my-presentation"])
+        result = cmd_new_pptx(["subdir/my-presentation"])
         stdout_output = sys.stdout.getvalue()
 
         self.assertEqual(result, 0)
@@ -173,8 +173,8 @@ class TestCmdNew(unittest.TestCase):
         self.assertTrue(qmd_file.exists())
 
 
-class TestCmdNewErrorCases(unittest.TestCase):
-    """Tests for cmd_new error handling."""
+class TestCmdNewPptxErrorCases(unittest.TestCase):
+    """Tests for cmd_new_pptx error handling."""
 
     def setUp(self) -> None:
         """Set up test fixtures."""
@@ -209,7 +209,7 @@ class TestCmdNewErrorCases(unittest.TestCase):
         if template_qmd.exists():
             template_qmd.rename(backup_path)
             try:
-                result = cmd_new(["test-pres"])
+                result = cmd_new_pptx(["test-pres"])
                 stderr_output = sys.stderr.getvalue()
 
                 self.assertEqual(result, 1)
@@ -230,7 +230,7 @@ class TestCmdNewErrorCases(unittest.TestCase):
         if template_pptx.exists():
             template_pptx.rename(backup_path)
             try:
-                result = cmd_new(["test-pres"])
+                result = cmd_new_pptx(["test-pres"])
                 stderr_output = sys.stderr.getvalue()
 
                 self.assertEqual(result, 1)
@@ -251,7 +251,7 @@ class TestCmdNewErrorCases(unittest.TestCase):
         if template_render.exists():
             template_render.rename(backup_path)
             try:
-                result = cmd_new(["test-pres"])
+                result = cmd_new_pptx(["test-pres"])
                 stderr_output = sys.stderr.getvalue()
 
                 self.assertEqual(result, 1)
@@ -267,7 +267,7 @@ class TestCmdNewErrorCases(unittest.TestCase):
         # Create a file with the same name to cause mkdir to fail
         Path("blocked").write_text("blocking file")
 
-        result = cmd_new(["blocked/subdir"])
+        result = cmd_new_pptx(["blocked/subdir"])
         stderr_output = sys.stderr.getvalue()
 
         self.assertEqual(result, 1)
@@ -284,7 +284,7 @@ class TestCmdNewErrorCases(unittest.TestCase):
         os.chmod(target_dir, 0o555)
 
         try:
-            result = cmd_new(["readonly-dir"])
+            result = cmd_new_pptx(["readonly-dir"])
             stderr_output = sys.stderr.getvalue()
 
             self.assertEqual(result, 1)
@@ -309,7 +309,7 @@ class TestCmdNewErrorCases(unittest.TestCase):
 
             mock_write.side_effect = write_side_effect
 
-            result = cmd_new(["test-pres"])
+            result = cmd_new_pptx(["test-pres"])
             stderr_output = sys.stderr.getvalue()
 
             self.assertEqual(result, 1)
@@ -323,7 +323,7 @@ class TestCmdNewErrorCases(unittest.TestCase):
         with patch("pathlib.Path.symlink_to") as mock_symlink:
             mock_symlink.side_effect = OSError("Symlinks not supported")
 
-            result = cmd_new(["test-pres"])
+            result = cmd_new_pptx(["test-pres"])
             stderr_output = sys.stderr.getvalue()
             stdout_output = sys.stdout.getvalue()
 

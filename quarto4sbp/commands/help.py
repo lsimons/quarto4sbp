@@ -14,13 +14,13 @@ def cmd_help() -> int:
     print("Available commands:")
     print("  help       Show this help message")
     print("  echo       Echo back the command-line arguments")
-    print("  new        Create a new Quarto presentation from template")
+    print("  new-pptx   Create a new Quarto PowerPoint presentation from template")
     print("  pdf        Export PowerPoint presentations to PDF")
     print()
     print("Examples:")
     print("  q4s help")
     print("  q4s echo hello world")
-    print("  q4s new my-presentation")
+    print("  q4s new-pptx my-presentation")
     print(
         "  q4s pdf                    # Export all stale PPTX files in current directory"
     )

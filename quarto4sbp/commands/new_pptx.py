@@ -5,8 +5,8 @@ import sys
 from pathlib import Path
 
 
-def cmd_new(args: list[str]) -> int:
-    """Create a new Quarto presentation from template.
+def cmd_new_pptx(args: list[str]) -> int:
+    """Create a new Quarto PowerPoint presentation from template.
 
     Args:
         args: Command-line arguments (should contain directory name)
@@ -16,7 +16,7 @@ def cmd_new(args: list[str]) -> int:
     """
     if len(args) == 0:
         print("Error: Directory name required", file=sys.stderr)
-        print("Usage: q4s new <directory>", file=sys.stderr)
+        print("Usage: q4s new-pptx <directory>", file=sys.stderr)
         return 1
 
     dir_name = args[0]
@@ -82,8 +82,8 @@ def cmd_new(args: list[str]) -> int:
     # Create render.sh script from template
     try:
         render_content = template_render.read_text()
-        # Replace placeholder with actual presentation name
-        render_content = render_content.replace("{{PRESENTATION_NAME}}", base_name)
+        # Replace placeholder with actual file name
+        render_content = render_content.replace("{{FILE_NAME}}", base_name)
         render_script.write_text(render_content)
         # Make it executable
         render_script.chmod(0o755)

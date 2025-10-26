@@ -105,8 +105,8 @@ class TestMain(unittest.TestCase):
 class TestCLIIntegration(unittest.TestCase):
     """Integration tests for the q4s CLI."""
 
-    def test_cli_new(self) -> None:
-        """Test CLI new command via subprocess."""
+    def test_cli_new_pptx(self) -> None:
+        """Test CLI new-pptx command via subprocess."""
         import shutil
         import tempfile
         from pathlib import Path
@@ -115,7 +115,7 @@ class TestCLIIntegration(unittest.TestCase):
         temp_dir = tempfile.mkdtemp()
         try:
             result = subprocess.run(
-                ["uv", "run", "q4s", "new", "test-pres"],
+                ["uv", "run", "q4s", "new-pptx", "test-pres"],
                 capture_output=True,
                 text=True,
                 check=False,
