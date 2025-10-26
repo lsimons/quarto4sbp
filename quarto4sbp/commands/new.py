@@ -1,0 +1,91 @@
+"""Command to create a new Quarto presentation from template."""
+
+import os
+import sys
+from pathlib import Path
+
+
+def cmd_new(args: list[str]) -> int:
+    """Create a new Quarto presentation from template.
+
+    Args:
+        args: Command-line arguments (should contain directory name)
+
+    Returns:
+        Exit code (0 for success, 1 for errors)
+    """
+    if len(args) == 0:
+        print("Error: Directory name required", file=sys.stderr)
+        print("Usage: q4s new <directory>", file=sys.stderr)
+        return 1
+
+    dir_name = args[0]
+
+    # Validate directory name
+    if not dir_name or dir_name.startswith("-"):
+        print(f"Error: Invalid directory name '{dir_name}'", file=sys.stderr)
+        return 1
+
+    # Get paths
+    target_dir = Path(dir_name)
+    # Use base name (last component) for the qmd filename
+    base_name = target_dir.name
+    qmd_file = target_dir / f"{base_name}.qmd"
+    symlink_target = target_dir / "simple-presentation.pptx"
+
+    # Find the templates directory relative to this file
+    # quarto4sbp/commands/new.py -> quarto4sbp -> project root -> templates
+    project_root = Path(__file__).parent.parent.parent
+    template_qmd = project_root / "templates" / "simple-presentation.qmd"
+    template_pptx = project_root / "templates" / "simple-presentation.pptx"
+
+    # Verify template exists
+    if not template_qmd.exists():
+        print(f"Error: Template not found at {template_qmd}", file=sys.stderr)
+        return 1
+
+    if not template_pptx.exists():
+        print(
+            f"Error: PowerPoint template not found at {template_pptx}", file=sys.stderr
+        )
+        return 1
+
+    # Check if qmd file already exists
+    if qmd_file.exists():
+        print(f"Error: File already exists: {qmd_file}", file=sys.stderr)
+        return 1
+
+    # Create directory if it doesn't exist
+    try:
+        target_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        print(f"Error: Could not create directory '{target_dir}': {e}", file=sys.stderr)
+        return 1
+
+    # Copy template content to new qmd file
+    try:
+        content = template_qmd.read_text()
+        qmd_file.write_text(content)
+    except OSError as e:
+        print(f"Error: Could not create file '{qmd_file}': {e}", file=sys.stderr)
+        return 1
+
+    # Create symlink to PowerPoint template
+    # Use relative path from target_dir to templates/simple-presentation.pptx
+    try:
+        # Calculate relative path from target_dir to template_pptx
+        rel_path = os.path.relpath(template_pptx, target_dir)
+        symlink_target.symlink_to(rel_path)
+    except OSError as e:
+        # On Windows, symlinks may fail without admin/developer mode
+        # Print warning but don't fail the command
+        print(f"Warning: Could not create symlink: {e}", file=sys.stderr)
+        print(
+            f"You may need to manually copy or link to {template_pptx}", file=sys.stderr
+        )
+
+    # Success output
+    print(f"Created: {qmd_file}")
+    print(f"Hint: Run 'q4s render {qmd_file}' to generate the presentation")
+
+    return 0

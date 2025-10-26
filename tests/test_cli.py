@@ -87,6 +87,33 @@ class TestMain(unittest.TestCase):
 class TestCLIIntegration(unittest.TestCase):
     """Integration tests for the q4s CLI."""
 
+    def test_cli_new(self) -> None:
+        """Test CLI new command via subprocess."""
+        import shutil
+        import tempfile
+        from pathlib import Path
+
+        # Create a temporary directory for the test
+        temp_dir = tempfile.mkdtemp()
+        try:
+            result = subprocess.run(
+                ["uv", "run", "q4s", "new", "test-pres"],
+                capture_output=True,
+                text=True,
+                check=False,
+                cwd=temp_dir,
+            )
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("Created: test-pres/test-pres.qmd", result.stdout)
+            self.assertIn("Hint: Run 'q4s render", result.stdout)
+
+            # Verify files were created
+            qmd_file = Path(temp_dir) / "test-pres" / "test-pres.qmd"
+            self.assertTrue(qmd_file.exists())
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
     def test_cli_help(self) -> None:
         """Test CLI help via subprocess."""
         result = subprocess.run(

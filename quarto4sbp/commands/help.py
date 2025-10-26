@@ -14,8 +14,10 @@ def cmd_help() -> int:
     print("Available commands:")
     print("  help       Show this help message")
     print("  echo       Echo back the command-line arguments")
+    print("  new        Create a new Quarto presentation from template")
     print()
     print("Examples:")
     print("  q4s help")
     print("  q4s echo hello world")
+    print("  q4s new my-presentation")
     return 0
