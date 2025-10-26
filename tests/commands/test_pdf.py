@@ -364,12 +364,16 @@ class TestExportPptxToPdf(unittest.TestCase):
 class TestCmdPdf(unittest.TestCase):
     """Tests for cmd_pdf function."""
 
-    def test_no_directory_argument(self) -> None:
+    @patch("quarto4sbp.commands.pdf.export_pptx_to_pdf")
+    def test_no_directory_argument(self, mock_export: MagicMock) -> None:
         """Test running command in current directory."""
         with TemporaryDirectory() as tmpdir:
             directory = Path(tmpdir)
             pptx_file = directory / "test.pptx"
             pptx_file.write_text("pptx")
+
+            # Mock export to prevent actual PowerPoint invocation
+            mock_export.return_value = True
 
             # Change to temp directory
             import os
@@ -392,12 +396,16 @@ class TestCmdPdf(unittest.TestCase):
             finally:
                 os.chdir(old_cwd)
 
-    def test_with_directory_argument(self) -> None:
+    @patch("quarto4sbp.commands.pdf.export_pptx_to_pdf")
+    def test_with_directory_argument(self, mock_export: MagicMock) -> None:
         """Test running command with directory argument."""
         with TemporaryDirectory() as tmpdir:
             directory = Path(tmpdir)
             pptx_file = directory / "test.pptx"
             pptx_file.write_text("pptx")
+
+            # Mock export to prevent actual PowerPoint invocation
+            mock_export.return_value = True
 
             old_stdout = sys.stdout
             sys.stdout = StringIO()
