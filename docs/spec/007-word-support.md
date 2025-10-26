@@ -18,9 +18,9 @@
 - `q4s pdf-doc` command to export DOCX files to PDF (when DOCX is newer than PDF)
 - `q4s pdf` unified command to export both PPTX and DOCX files to PDF
 - Word document template with proper Quarto frontmatter
-- Render script for Word documents
+- Unified render script supporting both PowerPoint and Word documents
 - AppleScript-based PDF export via Microsoft Word application
-- Follow same patterns as PowerPoint support (spec-005, spec-006)</parameter>
+- Follow same patterns as PowerPoint support (spec-005, spec-006)
 
 **Design Approach:**
 - Mirror PowerPoint implementation patterns for consistency
@@ -33,17 +33,26 @@
 ```
 quarto4sbp/
   commands/
-    new_doc.py          # cmd_new_doc() implementation
-    pdf_doc.py          # cmd_pdf_doc() implementation
+    new_pptx.py         # cmd_new_pptx() implementation (renamed from new.py)
+    new_doc.py          # cmd_new_doc() implementation (new)
+    pdf_pptx.py         # cmd_pdf_pptx() implementation (renamed from pdf.py)
+    pdf_doc.py          # cmd_pdf_doc() implementation (new)
+    pdf.py              # cmd_pdf() unified implementation (new)
 templates/
-  simple-document.qmd   # Word template file (new)
-  simple-document.docx  # Word reference doc (new)
-  render-doc.sh.template # Render script for docs (new)
+  simple-presentation.qmd   # PowerPoint template (existing)
+  simple-presentation.pptx  # PowerPoint reference doc (existing)
+  simple-document.qmd       # Word template file (new)
+  simple-document.docx      # Word reference doc (new)
+  render.sh.template        # Unified render script (updated - works for both formats)
 tests/
   commands/
-    test_new_doc.py     # Unit tests for new-doc command
-    test_pdf_doc.py     # Unit tests for pdf-doc command
-    test_pdf_doc_integration.py  # Integration tests (optional)
+    test_new_pptx.py    # Unit tests for new-pptx command (renamed)
+    test_new_doc.py     # Unit tests for new-doc command (new)
+    test_pdf_pptx.py    # Unit tests for pdf-pptx command (renamed)
+    test_pdf_doc.py     # Unit tests for pdf-doc command (new)
+    test_pdf.py         # Unit tests for unified pdf command (new)
+    test_pdf_pptx_integration.py  # Integration tests for pptx (renamed)
+    test_pdf_doc_integration.py   # Integration tests for docx (new)
 ```
 
 **Template Design - simple-document.qmd:**
@@ -83,28 +92,12 @@ tests/
 2. Create directory if doesn't exist (error if file exists with same name)
 3. Create `<directory>/<directory>.qmd` from `templates/simple-document.qmd`
 4. Create symlink `<directory>/simple-document.docx` → `../templates/simple-document.docx`
-5. Create `<directory>/render-doc.sh` from template with document name substituted
-6. Make `render-doc.sh` executable
+5. Create `<directory>/render.sh` from template with document name substituted
+6. Make `render.sh` executable
 7. Print: `Created: <directory>/<directory>.qmd`
-8. Print: `Hint: Run 'cd <directory> && ./render-doc.sh' to generate the document`
+8. Print: `Hint: Run 'cd <directory> && ./render.sh' to generate the document`
 
-**render-doc.sh.template:**
-```bash
-#!/bin/sh
-# Render Quarto document to DOCX and PDF
-
-set -e
-
-echo "Rendering {{DOCUMENT_NAME}}.qmd to DOCX..."
-quarto render {{DOCUMENT_NAME}}.qmd
-
-echo "Exporting DOCX to PDF..."
-q4s pdf-doc
-
-echo "Done! Output files:"
-echo "  - {{DOCUMENT_NAME}}.docx"
-echo "  - {{DOCUMENT_NAME}}.pdf"
-```
+**Note:** Uses the same unified `render.sh.template` as PowerPoint (see Unified Render Script section below)</parameter>
 
 **Testing Strategy:**
 - Test successful creation with new directory
@@ -113,8 +106,8 @@ echo "  - {{DOCUMENT_NAME}}.pdf"
 - Test error when no directory argument provided
 - Verify symlink created correctly
 - Verify template content copied correctly
-- Verify render-doc.sh created and executable
-- Verify render-doc.sh contains correct document name
+- Verify render.sh created and executable
+- Verify render.sh contains correct document name
 - Use temporary directories for testing
 
 ## pdf-doc Command
@@ -229,6 +222,57 @@ Update help text to include:
   - `pdf-pptx   Export PPTX files to PDF (when PPTX is newer)`
   - `pdf-doc    Export DOCX files to PDF (when DOCX is newer)`
 
+## Unified Render Script
+
+**Purpose:** Single `render.sh` script that works for both PowerPoint and Word documents
+
+**Design:**
+- One `render.sh.template` in `templates/` directory
+- Used by both `new-pptx` and `new-doc` commands
+- Calls `quarto render` followed by unified `q4s pdf` command
+- The unified `pdf` command automatically handles both PPTX and DOCX files
+- Template uses `{{FILE_NAME}}` placeholder (more generic than PRESENTATION_NAME or DOCUMENT_NAME)
+
+**Template Content:**
+```bash
+#!/bin/sh
+# Render Quarto file and export to PDF
+# Supports both PowerPoint (.pptx) and Word (.docx) formats
+
+set -e
+
+FILE_NAME="{{FILE_NAME}}"
+
+echo "Rendering ${FILE_NAME}.qmd..."
+quarto render "${FILE_NAME}.qmd"
+
+if [ $? -eq 0 ]; then
+    echo "✓ Successfully rendered ${FILE_NAME}.qmd"
+
+    echo "Exporting to PDF..."
+    q4s pdf
+
+    if [ $? -eq 0 ]; then
+        echo "✓ Successfully exported to PDF"
+        echo ""
+        echo "Output files created in current directory"
+    else
+        echo "✗ PDF export failed"
+        exit 1
+    fi
+else
+    echo "✗ Rendering failed"
+    exit 1
+fi
+```
+
+**Benefits:**
+- Single template to maintain
+- Works automatically for any Quarto format (pptx, docx, or even mixed)
+- Unified `pdf` command handles format detection
+- Consistent user experience across formats
+- Simpler mental model for users
+
 ## Refactoring Tasks
 
 **Task 1: Rename `new` to `new-pptx` (q4s-38)**
@@ -237,7 +281,7 @@ Update help text to include:
 - Update CLI dispatcher in `cli.py`
 - Update help text
 - Update spec-005
-- Update render.sh.template to call `q4s pdf-pptx`
+- Update render.sh.template to use `{{FILE_NAME}}` placeholder and call unified `q4s pdf`
 - Update tests in `tests/commands/test_new.py` → `test_new_pptx.py`
 - Update README.md examples
 
@@ -249,7 +293,7 @@ Update help text to include:
 - Update CLI dispatcher in `cli.py`
 - Update help text
 - Update spec-006
-- Update render.sh.template to call `q4s pdf-pptx`
+- No changes needed to render.sh.template (already calls unified `q4s pdf`)
 - Update tests in `tests/commands/test_pdf.py` → `test_pdf_pptx.py`
 - Update integration tests similarly
 - Update README.md examples
@@ -263,8 +307,8 @@ Update help text to include:
 - Update README.md
 
 **Naming Convention Summary:**
-- **PowerPoint:** `new-pptx`, `pdf-pptx`, `simple-presentation.*`, `render.sh`
-- **Word:** `new-doc`, `pdf-doc`, `simple-document.*`, `render-doc.sh`
-- **Unified:** `pdf` (calls both `pdf-pptx` and `pdf-doc`)
+- **PowerPoint:** `new-pptx`, `pdf-pptx`, `simple-presentation.*`
+- **Word:** `new-doc`, `pdf-doc`, `simple-document.*`
+- **Unified:** `pdf` (calls both `pdf-pptx` and `pdf-doc`), `render.sh` (works for both formats)
 
 **Status:** Not yet implemented
