@@ -19,57 +19,21 @@
 - Use `~/.local/bin` following XDG Base Directory conventions
 - Install script is idempotent (safe to run multiple times)
 
-**File Structure:**
-```
-install.py          # Install script in project root
-~/.local/bin/q4s    # Generated shim (outside project)
-```
-
 **Shim Design:**
-The shim will be a bash script that:
-```bash
-#!/bin/bash
-PROJECT_DIR="/path/to/quarto4sbp"
-source "$PROJECT_DIR/.venv/bin/activate"
-exec python -m quarto4sbp.cli "$@"
-```
+- Bash script that activates project venv and runs CLI
+- Stores absolute project path at install time
+- Executable placed in `~/.local/bin/q4s`
 
 **Install Script Behavior:**
-- Verify current directory is the project root (has `pyproject.toml` with name="quarto4sbp")
-- Check that `.venv` exists (prompt to run `uv venv` if missing)
-- Create `~/.local/bin` directory if it doesn't exist
-- Write shim to `~/.local/bin/q4s` with execute permissions
-- Check if `~/.local/bin` is in user's PATH
-- Print success message with usage instructions
-
-**Error Cases:**
-- Exit with error if not run from project root
-- Exit with error if `.venv` doesn't exist (with helpful message)
-- Exit with error if unable to create `~/.local/bin`
-- Exit with error if unable to write shim file
-
-**Usage:**
-```bash
-# From project root
-python install.py
-
-# After install, use q4s directly
-q4s help
-q4s echo hello world
-```
-
-**Testing Strategy:**
-- Test install script with missing venv (should fail gracefully)
-- Test install script creates directory if missing
-- Test install script creates executable shim
-- Test shim can successfully run q4s commands
-- Test idempotency (running install twice works)
-- Use temporary directory for tests, not actual ~/.local/bin
+- Verify current directory is project root
+- Check `.venv` exists (error with helpful message if missing)
+- Create `~/.local/bin` if needed
+- Write shim with execute permissions
+- Check if `~/.local/bin` in PATH and inform user
 
 **Implementation Notes:**
-- Install script should be simple and self-contained
-- No dependencies beyond Python stdlib (pathlib, os, sys, subprocess)
+- See `000-shared-patterns.md` for dependency-free philosophy
 - Shim stores absolute path to avoid pwd-dependent behavior
-- Consider updating README.md with new install method
+- Install script is idempotent (safe to run multiple times)
 
 **Status:** Implemented

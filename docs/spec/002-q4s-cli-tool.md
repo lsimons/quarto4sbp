@@ -18,28 +18,13 @@
 - `echo` command prints all arguments separated by spaces
 - Install as console script via pyproject.toml
 
-**File Structure:**
-```
-quarto4sbp/
-  cli.py          # Main CLI entry point with argparse setup
-tests/
-  test_cli.py     # Unit tests for help and echo commands
-```
-
 **API Design:**
 - `main(args: list[str] | None = None) -> int` - Entry point, returns exit code
 - `cmd_help() -> int` - Handle help subcommand
 - `cmd_echo(args: list[str]) -> int` - Handle echo subcommand
 
-**Testing Strategy:**
-- Test help output includes "q4s" and "help", "echo" commands
-- Test echo with zero, one, and multiple arguments
-- Test unknown subcommand returns exit code 1
-- Use subprocess for integration testing of installed CLI
-
 **Implementation Notes:**
-- Follow shared patterns from `000-shared-patterns.md`
-- No external dependencies beyond stdlib
-- Simple, extensible design for future subcommands
+- See `000-shared-patterns.md` for CLI command patterns
+- Main entry point uses argparse with subparsers for extensibility
 
 **Status:** Implemented

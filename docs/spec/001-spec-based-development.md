@@ -21,10 +21,4 @@
 - Extract shared patterns rather than repeating across specs
 - Focus on "why" decisions were made, not "how" to implement
 
-**Benefits:**
-- Clear requirements before coding begins
-- Design review and discussion of approach
-- Permanent record of feature rationale
-- Consistency across all features
-
 **Status:** Implemented
