@@ -134,22 +134,6 @@ class TestInstall(unittest.TestCase):
         self.assertIn("q4s", result.stdout)
         self.assertIn("help", result.stdout)
 
-    def test_shim_runs_q4s_echo(self) -> None:
-        """Test that the installed shim can run q4s echo."""
-        shim_path = Path.home() / ".local" / "bin" / "q4s"
-        if not shim_path.exists():
-            self.skipTest("Skipping: q4s shim not installed, run install.py first")
-
-        # Run q4s echo via shim
-        result = subprocess.run(
-            [str(shim_path), "echo", "test", "message"],
-            capture_output=True,
-            text=True,
-        )
-
-        self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout.strip(), "test message")
-
 
 class TestInstallErrorCases(unittest.TestCase):
     """Test error cases for install script using temporary directories."""

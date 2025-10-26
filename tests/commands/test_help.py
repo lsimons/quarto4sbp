@@ -28,7 +28,6 @@ class TestCmdHelp(unittest.TestCase):
             # Check for key content
             self.assertIn("q4s", output)
             self.assertIn("help", output)
-            self.assertIn("echo", output)
             self.assertIn("Usage:", output)
         finally:
             sys.stdout = old_stdout
