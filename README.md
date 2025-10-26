@@ -79,6 +79,22 @@ cd my-presentation
 
 You can also run `q4s pdf` in any directory to convert files.
 
+### Disable Word automatic link updates
+
+If you get this dialog from Word on PDF conversion:
+
+![word dialog to update links](docs/images/word-link-update-dialog.png)
+
+You can disable automatic link updates in Word preferences:
+
+![word preference to not auto-update links](docs/images/word-disable-automatic-link-update.png)
+
+Step by step instructions:
+- Open **Microsoft Word**
+- Go to **Word** > **Preferences**
+- Select **General**
+- Uncheck **Update automatic links at open**
+
 ## Development
 
 ### Spec-Based Development
