@@ -41,34 +41,6 @@ class TestMain(unittest.TestCase):
         finally:
             sys.stdout = old_stdout
 
-    def test_echo_command(self) -> None:
-        """Test echo command with arguments."""
-        old_stdout = sys.stdout
-        sys.stdout = StringIO()
-
-        try:
-            result = main(["echo", "hello", "world"])
-            output = sys.stdout.getvalue()
-
-            self.assertEqual(result, 0)
-            self.assertEqual(output.strip(), "hello world")
-        finally:
-            sys.stdout = old_stdout
-
-    def test_echo_no_args(self) -> None:
-        """Test echo command with no arguments."""
-        old_stdout = sys.stdout
-        sys.stdout = StringIO()
-
-        try:
-            result = main(["echo"])
-            output = sys.stdout.getvalue()
-
-            self.assertEqual(result, 0)
-            self.assertEqual(output.strip(), "")
-        finally:
-            sys.stdout = old_stdout
-
     def test_invalid_command(self) -> None:
         """Test invalid command returns error."""
         old_stdout = sys.stdout
@@ -219,7 +191,6 @@ class TestCLIIntegration(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertIn("q4s", result.stdout)
         self.assertIn("help", result.stdout)
-        self.assertIn("echo", result.stdout)
 
     def test_cli_new_docx(self) -> None:
         """Test CLI new-docx command via subprocess."""
@@ -281,18 +252,6 @@ class TestCLIIntegration(unittest.TestCase):
             self.assertIn("docx:", content)
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
-
-    def test_cli_echo(self) -> None:
-        """Test CLI echo via subprocess."""
-        result = subprocess.run(
-            ["uv", "run", "q4s", "echo", "hello", "world"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-
-        self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout.strip(), "hello world")
 
     def test_cli_invalid_command(self) -> None:
         """Test CLI with invalid command via subprocess."""
