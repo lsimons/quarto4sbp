@@ -1,0 +1,59 @@
+---
+title: "Caseum"
+subtitle: "Introducing a lightweight approach to software architecture"
+author: "Leo Simons"
+mainfont: Merriweather
+sansfont: Merriweather Sans
+monofont: Cascadia Code
+format:
+  pptx:
+    reference-doc: ../../templates/simple-presentation.pptx
+---
+
+
+# Introduction
+
+
+## Key concepts
+
+:::: {.columns}
+::: {.column}
+* **Multiple views:**
+  * Use C4 for component diagrams
+* **Lightweight approach:**
+  * Don’t use a digital diagram when a whiteboard picture will do
+:::
+
+::: {.column}
+* **User-centric:**
+  * Include UI designs since they help users understand
+* **Standardise common best practices:**
+  * Embeds established practices like Event Storming and Domain-Driven Design
+:::
+::::
+
+::: {.notes}
+Caseum is simple and lightweight. It focuses on using whiteboards, interacting with users and stakeholders, and adopting best practices. Caseum adopts C4. It goes beyond C4 by including other kinds of views, and it goes against C4 in recommending you do not start with models as code.
+:::
+
+
+## Architecture = communication
+
+:::: {.columns}
+::: {.column}
+**Use simple, accessible tools:**
+
+* Architecture records design decisions
+* Designs are recorded for people working on and with the software
+* Prefer tools that untrained non-technical people can use
+* Slack & Email over Documents
+:::
+
+::: {.column}
+![](records-slack-example.png)
+:::
+::::
+
+::: {.notes}
+That’s because software architecture is about making decisions together. The architecture is a record of those decisions. This record should be useful to those making the software and to the people they work with. So, use simple and accessible communication tools.
+:::
