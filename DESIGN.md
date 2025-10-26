@@ -7,6 +7,25 @@ This document captures key design decisions for the quarto4sbp project. For deta
 - **Organized structure**: Main code in `quarto4sbp/`, tests in `tests/`, configuration in `etc/`
 - **Functional approach**: Avoids OOP, uses simple functions for clarity and maintainability
 
+## Quarto Integration
+- **Template-based workflow**: Projects created from templates with reference documents
+- **Multi-format support**: Single `.qmd` source can output to multiple formats (PowerPoint, Word)
+- **Unified render script**: One `render.sh` template works for all formats, calls `quarto render` then `q4s pdf`
+- **Symlinked references**: Template reference docs (`.pptx`, `.docx`) symlinked from central `templates/` directory
+
+## PDF Export
+- **AppleScript automation**: Use Microsoft Office apps (PowerPoint, Word) via AppleScript for PDF export (macOS)
+- **Staleness detection**: Only export when source is newer than PDF or PDF doesn't exist
+- **Double extension naming**: PDFs named `file.pptx.pdf` and `file.docx.pdf` to preserve provenance and prevent conflicts
+- **Skip templates**: Exclude symlinks and files in `templates/` directory from export
+- **Optional integration tests**: Real Office app tests marked with `@unittest.skipUnless(RUN_INTEGRATION_TESTS)`, skipped in CI
+
+## File Naming & Conventions
+- **Command naming**: Format-specific commands use suffixes (`new-pptx`, `pdf-docx`), unified commands omit suffix (`new`, `pdf`)
+- **Project structure**: `<directory>/<directory>.qmd` pattern - QMD file named same as containing directory
+- **Template files**: `simple-presentation.*` for PowerPoint, `simple-document.*` for Word
+- **Double extensions**: Used for derived files to show transformation chain (`.pptx.pdf`, `.docx.pdf`)
+
 ## Error Handling & Reliability
 - **Graceful degradation**: Continue execution when individual tasks fail, with clear error messages
 - **Exit codes**: 0 for success/already-ran, 1 for errors, 2 for test failures
@@ -27,5 +46,6 @@ This document captures key design decisions for the quarto4sbp project. For deta
 
 ## Development Process
 - **Spec-driven development**: New features documented in `docs/spec/` before implementation
-- **Concise specs**: Focus on design decisions, reference shared patterns, avoid implementation details
+- **Concise specs**: Focus on design decisions, reference `000-shared-patterns.md`, avoid implementation details
+- **Shared patterns**: Common code patterns, templates, and boilerplate documented once in `docs/spec/000-shared-patterns.md`
 - **Design documentation**: This file updated with architectural decisions made during feature implementation
