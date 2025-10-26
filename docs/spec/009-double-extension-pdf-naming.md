@@ -259,4 +259,4 @@ Since the project is in early stages, migration impact should be minimal.
 - Could add a config file option for naming preference
 - Consider documenting pattern in a central "naming conventions" doc
 
-**Status:** Specified, not yet implemented (q4s-42)
+**Status:** Implemented (q4s-42)

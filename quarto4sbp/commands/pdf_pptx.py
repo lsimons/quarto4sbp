@@ -34,7 +34,8 @@ def find_stale_pptx(directory: Path) -> list[Path]:
             continue
 
         # Check if PDF exists and compare modification times
-        pdf_path = pptx_path.with_suffix(".pdf")
+        # Use double extension to preserve source format
+        pdf_path = Path(str(pptx_path) + ".pdf")
 
         if not pdf_path.exists():
             # No PDF exists - needs export
@@ -64,7 +65,8 @@ def export_pptx_to_pdf(pptx_path: Path) -> bool:
     """
     try:
         # Calculate PDF path
-        pdf_path = pptx_path.with_suffix(".pdf")
+        # Use double extension to preserve source format
+        pdf_path = Path(str(pptx_path) + ".pdf")
 
         # Build AppleScript to export PDF
         applescript = f"""
@@ -138,7 +140,7 @@ def cmd_pdf_pptx(args: list[str]) -> int:
     skipped_count = 0
 
     for pptx_path in stale_pptx:
-        print(f"Exporting: {pptx_path.name} -> {pptx_path.stem}.pdf")
+        print(f"Exporting: {pptx_path.name} -> {pptx_path.name}.pdf")
         if export_pptx_to_pdf(pptx_path):
             exported_count += 1
         else:

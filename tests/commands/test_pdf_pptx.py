@@ -45,7 +45,7 @@ class TestFindStalePptx(unittest.TestCase):
         with TemporaryDirectory() as tmpdir:
             directory = Path(tmpdir)
             pptx_file = directory / "presentation.pptx"
-            pdf_file = directory / "presentation.pdf"
+            pdf_file = directory / "presentation.pptx.pdf"
 
             # Create PDF first
             pdf_file.write_text("old pdf")
@@ -62,7 +62,7 @@ class TestFindStalePptx(unittest.TestCase):
         with TemporaryDirectory() as tmpdir:
             directory = Path(tmpdir)
             pptx_file = directory / "presentation.pptx"
-            pdf_file = directory / "presentation.pdf"
+            pdf_file = directory / "presentation.pptx.pdf"
 
             # Create PPTX first
             pptx_file.write_text("pptx")
@@ -123,14 +123,14 @@ class TestFindStalePptx(unittest.TestCase):
 
             # File 2: Older PDF
             file2 = directory / "presentation2.pptx"
-            pdf2 = directory / "presentation2.pdf"
+            pdf2 = directory / "presentation2.pptx.pdf"
             pdf2.write_text("old pdf")
             sleep(0.01)
             file2.write_text("new pptx")
 
             # File 3: Up-to-date PDF (should be excluded)
             file3 = directory / "presentation3.pptx"
-            pdf3 = directory / "presentation3.pdf"
+            pdf3 = directory / "presentation3.pptx.pdf"
             file3.write_text("pptx3")
             sleep(0.01)
             pdf3.write_text("new pdf")
@@ -158,7 +158,7 @@ class TestExportPptxToPdf(unittest.TestCase):
 
             # Mock PDF creation since AppleScript won't actually run
             def create_pdf(*args: object, **kwargs: object) -> MagicMock:
-                pdf_file = directory / "presentation.pdf"
+                pdf_file = directory / "presentation.pptx.pdf"
                 pdf_file.write_text("pdf content")
                 return mock_run.return_value
 
@@ -168,7 +168,7 @@ class TestExportPptxToPdf(unittest.TestCase):
 
             self.assertTrue(result)
             # Check PDF was created in original location
-            pdf_file = directory / "presentation.pdf"
+            pdf_file = directory / "presentation.pptx.pdf"
             self.assertTrue(pdf_file.exists())
             self.assertEqual(pdf_file.read_text(), "pdf content")
 
@@ -349,7 +349,7 @@ class TestCmdPdfPptx(unittest.TestCase):
 
                 self.assertEqual(result, 0)
                 self.assertIn("Found 1 file(s) to export", output)
-                self.assertIn("Exporting: test.pptx", output)
+                self.assertIn("Exporting: test.pptx -> test.pptx.pdf", output)
                 self.assertIn("Exported 1 file(s)", output)
                 mock_export.assert_called_once()
             finally:

@@ -45,7 +45,7 @@ class TestFindStaleDocx(unittest.TestCase):
         with TemporaryDirectory() as tmpdir:
             directory = Path(tmpdir)
             docx_file = directory / "document.docx"
-            pdf_file = directory / "document.pdf"
+            pdf_file = directory / "document.docx.pdf"
 
             # Create PDF first
             pdf_file.write_text("old pdf")
@@ -62,7 +62,7 @@ class TestFindStaleDocx(unittest.TestCase):
         with TemporaryDirectory() as tmpdir:
             directory = Path(tmpdir)
             docx_file = directory / "document.docx"
-            pdf_file = directory / "document.pdf"
+            pdf_file = directory / "document.docx.pdf"
 
             # Create DOCX first
             docx_file.write_text("docx")
@@ -123,14 +123,14 @@ class TestFindStaleDocx(unittest.TestCase):
 
             # File 2: Older PDF
             file2 = directory / "document2.docx"
-            pdf2 = directory / "document2.pdf"
+            pdf2 = directory / "document2.docx.pdf"
             pdf2.write_text("old pdf")
             sleep(0.01)
             file2.write_text("new docx")
 
             # File 3: Up-to-date PDF (should be excluded)
             file3 = directory / "document3.docx"
-            pdf3 = directory / "document3.pdf"
+            pdf3 = directory / "document3.docx.pdf"
             file3.write_text("docx3")
             sleep(0.01)
             pdf3.write_text("new pdf")
@@ -158,7 +158,7 @@ class TestExportDocxToPdf(unittest.TestCase):
 
             # Mock PDF creation since AppleScript won't actually run
             def create_pdf(*args: object, **kwargs: object) -> MagicMock:
-                pdf_file = directory / "document.pdf"
+                pdf_file = directory / "document.docx.pdf"
                 pdf_file.write_text("pdf content")
                 return mock_run.return_value
 
@@ -168,7 +168,7 @@ class TestExportDocxToPdf(unittest.TestCase):
 
             self.assertTrue(result)
             # Check PDF was created in original location
-            pdf_file = directory / "document.pdf"
+            pdf_file = directory / "document.docx.pdf"
             self.assertTrue(pdf_file.exists())
             self.assertEqual(pdf_file.read_text(), "pdf content")
 
@@ -271,7 +271,7 @@ class TestCmdPdfDocx(unittest.TestCase):
             self.assertEqual(result, 0)
             self.assertIn("Found 1 file(s) to export", output)
             self.assertIn("document.docx", output)
-            self.assertIn("Exporting: document.docx -> document.pdf", output)
+            self.assertIn("Exporting: document.docx -> document.docx.pdf", output)
             self.assertIn("Exported 1 file(s)", output)
             self.assertIn("skipped 0 file(s)", output)
 

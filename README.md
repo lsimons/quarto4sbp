@@ -139,13 +139,13 @@ $ q4s pdf
 === Exporting PowerPoint files ===
 Found 1 file(s) to export:
   - presentation.pptx
-Exporting: presentation.pptx -> presentation.pdf
+Exporting: presentation.pptx -> presentation.pptx.pdf
 Exported 1 file(s), skipped 0 file(s)
 
 === Exporting Word documents ===
 Found 1 file(s) to export:
   - document.docx
-Exporting: document.docx -> document.pdf
+Exporting: document.docx -> document.docx.pdf
 Exported 1 file(s), skipped 0 file(s)
 
 ✓ All exports completed successfully
@@ -154,14 +154,14 @@ Exported 1 file(s), skipped 0 file(s)
 $ q4s pdf-pptx
 Found 1 file(s) to export:
   - presentation.pptx
-Exporting: presentation.pptx -> presentation.pdf
+Exporting: presentation.pptx -> presentation.pptx.pdf
 Exported 1 file(s), skipped 0 file(s)
 
 # Export only Word documents
 $ q4s pdf-docx
 Found 1 file(s) to export:
   - document.docx
-Exporting: document.docx -> document.pdf
+Exporting: document.docx -> document.docx.pdf
 Exported 1 file(s), skipped 0 file(s)
 ```
 

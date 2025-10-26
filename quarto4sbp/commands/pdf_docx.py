@@ -34,7 +34,8 @@ def find_stale_docx(directory: Path) -> list[Path]:
             continue
 
         # Check if PDF exists and compare modification times
-        pdf_path = docx_path.with_suffix(".pdf")
+        # Use double extension to preserve source format
+        pdf_path = Path(str(docx_path) + ".pdf")
 
         if not pdf_path.exists():
             # No PDF exists - needs export
@@ -64,7 +65,8 @@ def export_docx_to_pdf(docx_path: Path) -> bool:
     """
     try:
         # Calculate PDF path
-        pdf_path = docx_path.with_suffix(".pdf")
+        # Use double extension to preserve source format
+        pdf_path = Path(str(docx_path) + ".pdf")
 
         # Build AppleScript to export PDF
         applescript = f"""
@@ -138,7 +140,7 @@ def cmd_pdf_docx(args: list[str]) -> int:
     skipped_count = 0
 
     for docx_path in stale_docx:
-        print(f"Exporting: {docx_path.name} -> {docx_path.stem}.pdf")
+        print(f"Exporting: {docx_path.name} -> {docx_path.name}.pdf")
         if export_docx_to_pdf(docx_path):
             exported_count += 1
         else:
