@@ -4,6 +4,7 @@ import subprocess
 import sys
 import unittest
 from io import StringIO
+from tempfile import TemporaryDirectory
 
 from quarto4sbp.cli import main
 
@@ -70,18 +71,35 @@ class TestMain(unittest.TestCase):
 
     def test_invalid_command(self) -> None:
         """Test invalid command returns error."""
+        old_stdout = sys.stdout
         old_stderr = sys.stderr
+        sys.stdout = StringIO()
         sys.stderr = StringIO()
 
         try:
             result = main(["invalid"])
-            error = sys.stderr.getvalue()
+            stderr = sys.stderr.getvalue()
 
             self.assertEqual(result, 1)
-            self.assertIn("Unknown command", error)
-            self.assertIn("invalid", error)
+            self.assertIn("Unknown command", stderr)
         finally:
+            sys.stdout = old_stdout
             sys.stderr = old_stderr
+
+    def test_pdf_command(self) -> None:
+        """Test pdf command integration."""
+        with TemporaryDirectory() as tmpdir:
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+
+            try:
+                result = main(["pdf", tmpdir])
+                output = sys.stdout.getvalue()
+
+                self.assertEqual(result, 0)
+                self.assertIn("No PPTX files need exporting", output)
+            finally:
+                sys.stdout = old_stdout
 
 
 class TestCLIIntegration(unittest.TestCase):

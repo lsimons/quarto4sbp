@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from quarto4sbp.commands import cmd_echo, cmd_help, cmd_new
+from quarto4sbp.commands import cmd_echo, cmd_help, cmd_new, cmd_pdf
 
 
 def main(args: list[str] | None = None) -> int:
@@ -24,7 +24,7 @@ def main(args: list[str] | None = None) -> int:
     parser.add_argument(
         "command",
         nargs="?",
-        help="Command to run (help, echo, new)",
+        help="Command to run (help, echo, new, pdf)",
     )
 
     parser.add_argument(
@@ -49,6 +49,8 @@ def main(args: list[str] | None = None) -> int:
         return cmd_echo(command_args)
     elif command == "new":
         return cmd_new(command_args)
+    elif command == "pdf":
+        return cmd_pdf(command_args)
     else:
         print(f"Error: Unknown command '{command}'", file=sys.stderr)
         print("Run 'q4s help' for usage information", file=sys.stderr)
