@@ -5,8 +5,10 @@ author: "Leo Simons"
 format:
   pptx:
     reference-doc: ../../templates/simple-presentation.pptx
+  docx:
+    reference-doc: ../../templates/simple-document.docx
+    toc: true
 ---
-
 
 # Introduction
 
