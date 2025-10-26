@@ -30,6 +30,25 @@ To install try `brew tap steveyegge/beads && brew install bd` on mac.
 - Reference spec numbers in commit messages during feature implementation
 - Run tests after changes: `uv run pytest`
 
+### Commits
+
+### Git
+
+Follow [Conventional Commits](https://conventionalcommits.org/) with types:
+
+- build: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+- ci: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+- docs: Documentation only changes
+- feat: A new feature
+- fix: A bug fix
+- perf: A code change that improves performance
+- refactor: A code change that neither fixes a bug nor adds a feature
+- revert: undoing (an)other commit(s)
+- style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- test: Adding missing tests or correcting existing tests
+- improvement: Improves code in some other way (that is not a feat or fix)
+- chore: Changes that take care of some other kind of chore that doesn't impact the main code
+
 ## Testing
 
 Unit and integration tests are located in `tests/`. Run them using:
