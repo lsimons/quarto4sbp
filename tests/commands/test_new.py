@@ -1,10 +1,12 @@
 """Unit tests for new command."""
 
+import os
 import sys
 import tempfile
 import unittest
 from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 from quarto4sbp.commands.new import cmd_new
 
@@ -169,6 +171,166 @@ class TestCmdNew(unittest.TestCase):
 
         qmd_file = target_dir / "my-presentation.qmd"
         self.assertTrue(qmd_file.exists())
+
+
+class TestCmdNewErrorCases(unittest.TestCase):
+    """Tests for cmd_new error handling."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures."""
+        self.old_stdout = sys.stdout
+        self.old_stderr = sys.stderr
+        self.temp_dir = tempfile.mkdtemp()
+        self.original_cwd = Path.cwd()
+        import os
+
+        os.chdir(self.temp_dir)
+
+    def tearDown(self) -> None:
+        """Clean up test fixtures."""
+        sys.stdout = self.old_stdout
+        sys.stderr = self.old_stderr
+        import os
+        import shutil
+
+        os.chdir(self.original_cwd)
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    def test_missing_template_qmd(self) -> None:
+        """Test error when template qmd file is missing."""
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+
+        # Temporarily hide the template by renaming it
+        project_root = Path(__file__).parent.parent.parent
+        template_qmd = project_root / "templates" / "simple-presentation.qmd"
+        backup_path = project_root / "templates" / "simple-presentation.qmd.backup"
+
+        if template_qmd.exists():
+            template_qmd.rename(backup_path)
+            try:
+                result = cmd_new(["test-pres"])
+                stderr_output = sys.stderr.getvalue()
+
+                self.assertEqual(result, 1)
+                self.assertIn("Error: Template not found", stderr_output)
+            finally:
+                backup_path.rename(template_qmd)
+
+    def test_missing_template_pptx(self) -> None:
+        """Test error when PowerPoint template is missing."""
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+
+        # Temporarily hide the PowerPoint template
+        project_root = Path(__file__).parent.parent.parent
+        template_pptx = project_root / "templates" / "simple-presentation.pptx"
+        backup_path = project_root / "templates" / "simple-presentation.pptx.backup"
+
+        if template_pptx.exists():
+            template_pptx.rename(backup_path)
+            try:
+                result = cmd_new(["test-pres"])
+                stderr_output = sys.stderr.getvalue()
+
+                self.assertEqual(result, 1)
+                self.assertIn("Error: PowerPoint template not found", stderr_output)
+            finally:
+                backup_path.rename(template_pptx)
+
+    def test_missing_render_template(self) -> None:
+        """Test error when render script template is missing."""
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+
+        # Temporarily hide the render template
+        project_root = Path(__file__).parent.parent.parent
+        template_render = project_root / "templates" / "render.sh.template"
+        backup_path = project_root / "templates" / "render.sh.template.backup"
+
+        if template_render.exists():
+            template_render.rename(backup_path)
+            try:
+                result = cmd_new(["test-pres"])
+                stderr_output = sys.stderr.getvalue()
+
+                self.assertEqual(result, 1)
+                self.assertIn("Error: Render script template not found", stderr_output)
+            finally:
+                backup_path.rename(template_render)
+
+    def test_directory_creation_error(self) -> None:
+        """Test error when directory creation fails."""
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+
+        # Create a file with the same name to cause mkdir to fail
+        Path("blocked").write_text("blocking file")
+
+        result = cmd_new(["blocked/subdir"])
+        stderr_output = sys.stderr.getvalue()
+
+        self.assertEqual(result, 1)
+        self.assertIn("Error: Could not create directory", stderr_output)
+
+    def test_qmd_file_write_error(self) -> None:
+        """Test error when qmd file cannot be written."""
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+
+        # Create directory but make it read-only
+        target_dir = Path("readonly-dir")
+        target_dir.mkdir()
+        os.chmod(target_dir, 0o555)
+
+        try:
+            result = cmd_new(["readonly-dir"])
+            stderr_output = sys.stderr.getvalue()
+
+            self.assertEqual(result, 1)
+            self.assertIn("Error: Could not create file", stderr_output)
+        finally:
+            # Restore permissions for cleanup
+            os.chmod(target_dir, 0o755)
+
+    def test_render_script_write_error(self) -> None:
+        """Test error when render script cannot be written."""
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+
+        with patch("pathlib.Path.write_text") as mock_write:
+            # Make the second write_text call (render script) fail
+            call_count = [0]
+
+            def write_side_effect(content: str) -> None:
+                call_count[0] += 1
+                if call_count[0] == 2:  # Second call is for render script
+                    raise OSError("Permission denied")
+
+            mock_write.side_effect = write_side_effect
+
+            result = cmd_new(["test-pres"])
+            stderr_output = sys.stderr.getvalue()
+
+            self.assertEqual(result, 1)
+            self.assertIn("Error: Could not create render script", stderr_output)
+
+    def test_symlink_creation_warning(self) -> None:
+        """Test warning when symlink creation fails (non-fatal)."""
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+
+        with patch("pathlib.Path.symlink_to") as mock_symlink:
+            mock_symlink.side_effect = OSError("Symlinks not supported")
+
+            result = cmd_new(["test-pres"])
+            stderr_output = sys.stderr.getvalue()
+            stdout_output = sys.stdout.getvalue()
+
+            # Should succeed despite symlink failure
+            self.assertEqual(result, 0)
+            self.assertIn("Warning: Could not create symlink", stderr_output)
+            self.assertIn("Created: test-pres/test-pres.qmd", stdout_output)
 
 
 if __name__ == "__main__":
