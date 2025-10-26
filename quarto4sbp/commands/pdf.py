@@ -1,6 +1,7 @@
 """PDF command for q4s CLI."""
 
 import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -113,6 +114,73 @@ def cleanup_temp_dir(temp_dir: Path) -> None:
         pass
 
 
+def export_pptx_to_pdf(pptx_path: Path) -> bool:
+    """Export a PPTX file to PDF using PowerPoint via AppleScript.
+
+    This function handles the complete export workflow:
+    1. Creates temporary directory for sandboxed PowerPoint
+    2. Copies PPTX to temp directory
+    3. Invokes PowerPoint via AppleScript to export PDF
+    4. Copies PDF back to original location
+    5. Cleans up temporary directory
+
+    Args:
+        pptx_path: Path to PPTX file to export
+
+    Returns:
+        True if export succeeded, False otherwise
+    """
+    temp_dir = None
+    try:
+        # Create temporary directory
+        temp_dir = create_temp_export_dir()
+
+        # Prepare file for export
+        temp_pptx, temp_pdf = prepare_file_for_export(pptx_path, temp_dir)
+
+        # Build AppleScript to export PDF
+        applescript = f"""
+tell application "Microsoft PowerPoint"
+    open POSIX file "{temp_pptx}"
+    set theDoc to active presentation
+    save theDoc in POSIX file "{temp_pdf}" as save as PDF
+    close theDoc
+end tell
+"""
+
+        # Execute AppleScript
+        _ = subprocess.run(
+            ["osascript", "-e", applescript],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        # Check if PDF was created
+        if not temp_pdf.exists():
+            print(f"Error: PowerPoint did not create PDF for {pptx_path.name}")
+            return False
+
+        # Copy PDF to destination
+        dest_pdf = pptx_path.with_suffix(".pdf")
+        copy_pdf_to_destination(temp_pdf, dest_pdf)
+
+        return True
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error: AppleScript failed for {pptx_path.name}")
+        if e.stderr:
+            print(f"  {e.stderr.strip()}")
+        return False
+    except OSError as e:
+        print(f"Error: File operation failed for {pptx_path.name}: {e}")
+        return False
+    finally:
+        # Always clean up temp directory
+        if temp_dir:
+            cleanup_temp_dir(temp_dir)
+
+
 def cmd_pdf(args: list[str]) -> int:
     """Handle the pdf subcommand.
 
@@ -145,6 +213,17 @@ def cmd_pdf(args: list[str]) -> int:
     for pptx_path in stale_pptx:
         print(f"  - {pptx_path.name}")
 
-    # TODO: Implement actual PDF export
-    print("\nPDF export not yet implemented")
+    # Export each file
+    exported_count = 0
+    skipped_count = 0
+
+    for pptx_path in stale_pptx:
+        print(f"Exporting: {pptx_path.name} -> {pptx_path.stem}.pdf")
+        if export_pptx_to_pdf(pptx_path):
+            exported_count += 1
+        else:
+            skipped_count += 1
+
+    # Print summary
+    print(f"\nExported {exported_count} file(s), skipped {skipped_count} file(s)")
     return 0

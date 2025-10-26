@@ -6,12 +6,14 @@ from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import sleep
+from unittest.mock import MagicMock, patch
 
 from quarto4sbp.commands.pdf import (
     cleanup_temp_dir,
     cmd_pdf,
     copy_pdf_to_destination,
     create_temp_export_dir,
+    export_pptx_to_pdf,
     find_stale_pptx,
     prepare_file_for_export,
 )
@@ -236,6 +238,129 @@ class TestTempFolderManagement(unittest.TestCase):
                 cleanup_temp_dir(temp_dir)
 
 
+class TestExportPptxToPdf(unittest.TestCase):
+    """Tests for export_pptx_to_pdf function."""
+
+    @patch("quarto4sbp.commands.pdf.subprocess.run")
+    def test_export_success(self, mock_run: MagicMock) -> None:
+        """Test successful PDF export."""
+        with TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            pptx_file = directory / "presentation.pptx"
+            pptx_file.write_text("pptx content")
+
+            # Mock successful subprocess execution
+            mock_run.return_value = MagicMock(returncode=0, stderr="")
+
+            # We need to mock the temp PDF creation since AppleScript won't run
+            original_prepare = prepare_file_for_export
+
+            def mock_prepare(pptx_path: Path, temp_dir: Path) -> tuple[Path, Path]:
+                temp_pptx, temp_pdf = original_prepare(pptx_path, temp_dir)
+                # Simulate PowerPoint creating the PDF
+                temp_pdf.write_text("pdf content")
+                return temp_pptx, temp_pdf
+
+            with patch(
+                "quarto4sbp.commands.pdf.prepare_file_for_export",
+                side_effect=mock_prepare,
+            ):
+                result = export_pptx_to_pdf(pptx_file)
+
+            self.assertTrue(result)
+            # Check PDF was created in original location
+            pdf_file = directory / "presentation.pdf"
+            self.assertTrue(pdf_file.exists())
+            self.assertEqual(pdf_file.read_text(), "pdf content")
+
+    @patch("quarto4sbp.commands.pdf.subprocess.run")
+    def test_export_applescript_fails(self, mock_run: MagicMock) -> None:
+        """Test handling of AppleScript failure."""
+        with TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            pptx_file = directory / "presentation.pptx"
+            pptx_file.write_text("pptx content")
+
+            # Mock failed subprocess execution
+            import subprocess
+
+            mock_run.side_effect = subprocess.CalledProcessError(
+                1, "osascript", stderr="PowerPoint error"
+            )
+
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+            try:
+                result = export_pptx_to_pdf(pptx_file)
+                output = sys.stdout.getvalue()
+
+                self.assertFalse(result)
+                self.assertIn("Error:", output)
+                self.assertIn("AppleScript failed", output)
+            finally:
+                sys.stdout = old_stdout
+
+    @patch("quarto4sbp.commands.pdf.subprocess.run")
+    def test_export_pdf_not_created(self, mock_run: MagicMock) -> None:
+        """Test handling when PowerPoint doesn't create PDF."""
+        with TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            pptx_file = directory / "presentation.pptx"
+            pptx_file.write_text("pptx content")
+
+            # Mock successful subprocess but don't create PDF
+            mock_run.return_value = MagicMock(returncode=0, stderr="")
+
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+            try:
+                result = export_pptx_to_pdf(pptx_file)
+                output = sys.stdout.getvalue()
+
+                self.assertFalse(result)
+                self.assertIn("Error:", output)
+                self.assertIn("did not create PDF", output)
+            finally:
+                sys.stdout = old_stdout
+
+    @patch("quarto4sbp.commands.pdf.subprocess.run")
+    def test_export_cleans_up_temp_dir(self, mock_run: MagicMock) -> None:
+        """Test that temp directory is cleaned up even on error."""
+        with TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            pptx_file = directory / "presentation.pptx"
+            pptx_file.write_text("pptx content")
+
+            # Mock failed subprocess
+            import subprocess
+
+            mock_run.side_effect = subprocess.CalledProcessError(1, "osascript")
+
+            # Capture temp directories created
+            temp_dirs_created: list[Path] = []
+            original_create = create_temp_export_dir
+
+            def track_create() -> Path:
+                temp_dir = original_create()
+                temp_dirs_created.append(temp_dir)
+                return temp_dir
+
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+            try:
+                with patch(
+                    "quarto4sbp.commands.pdf.create_temp_export_dir",
+                    side_effect=track_create,
+                ):
+                    _ = export_pptx_to_pdf(pptx_file)
+
+                # Verify temp directory was cleaned up
+                for temp_dir in temp_dirs_created:
+                    self.assertFalse(temp_dir.exists())
+            finally:
+                sys.stdout = old_stdout
+
+
 class TestCmdPdf(unittest.TestCase):
     """Tests for cmd_pdf function."""
 
@@ -332,6 +457,53 @@ class TestCmdPdf(unittest.TestCase):
 
                 self.assertEqual(result, 0)
                 self.assertIn("No PPTX files need exporting", output)
+            finally:
+                sys.stdout = old_stdout
+
+    @patch("quarto4sbp.commands.pdf.export_pptx_to_pdf")
+    def test_export_integration(self, mock_export: MagicMock) -> None:
+        """Test command with successful export."""
+        with TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            pptx_file = directory / "test.pptx"
+            pptx_file.write_text("pptx")
+
+            # Mock successful export
+            mock_export.return_value = True
+
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+            try:
+                result = cmd_pdf([str(directory)])
+                output = sys.stdout.getvalue()
+
+                self.assertEqual(result, 0)
+                self.assertIn("Found 1 file(s) to export", output)
+                self.assertIn("Exporting: test.pptx", output)
+                self.assertIn("Exported 1 file(s)", output)
+                mock_export.assert_called_once()
+            finally:
+                sys.stdout = old_stdout
+
+    @patch("quarto4sbp.commands.pdf.export_pptx_to_pdf")
+    def test_export_with_failure(self, mock_export: MagicMock) -> None:
+        """Test command when export fails."""
+        with TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            pptx_file = directory / "test.pptx"
+            pptx_file.write_text("pptx")
+
+            # Mock failed export
+            mock_export.return_value = False
+
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+            try:
+                result = cmd_pdf([str(directory)])
+                output = sys.stdout.getvalue()
+
+                self.assertEqual(result, 0)
+                self.assertIn("skipped 1 file(s)", output)
             finally:
                 sys.stdout = old_stdout
 
