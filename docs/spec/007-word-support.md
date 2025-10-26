@@ -8,8 +8,9 @@
 3. Implement `new-doc` command for Word documents
 4. Implement `pdf-doc` command for Word PDF export
 5. Create unified `pdf` command that calls both `pdf-pptx` and `pdf-doc` (q4s-36)
-6. Create Word templates (qmd, docx, render-doc.sh)
-7. Update documentation
+6. Create Word templates (qmd, docx, render.sh)
+7. Update README.md to document PowerPoint and Word as dependencies (q4s-39)
+8. Update documentation
 
 **Requirements:**
 - `q4s new-pptx <directory>` command to create new PowerPoint presentations (renamed from `new`)
@@ -194,8 +195,9 @@ Update help text to include:
 - Add Word support to README.md with examples
 - Document Word-specific Quarto options (toc, number-sections, reference-doc)
 - Document custom styles usage
-- Document render-doc.sh workflow
+- Document unified render.sh workflow
 - Note macOS + Microsoft Word requirement for PDF export
+- Update Prerequisites section to list Microsoft Office (PowerPoint and Word) for PDF export
 
 ## Unified pdf Command
 
@@ -304,7 +306,15 @@ fi
 - Wire up in CLI dispatcher
 - Add tests in `tests/commands/test_pdf.py`
 - Update help text
-- Update README.md
+- Update README.md examples
+
+**Task 4: Update README.md dependencies (q4s-39)**
+- Add Microsoft Office section to Prerequisites
+- Document PowerPoint requirement for `pdf-pptx` command
+- Document Word requirement for `pdf-doc` command
+- Note that unified `pdf` command requires both for full functionality
+- Specify macOS requirement for AppleScript-based PDF export
+- Add examples for both PowerPoint and Word workflows
 
 **Naming Convention Summary:**
 - **PowerPoint:** `new-pptx`, `pdf-pptx`, `simple-presentation.*`
