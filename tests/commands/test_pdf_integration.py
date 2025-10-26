@@ -8,13 +8,9 @@ To run these tests:
 """
 
 import os
-import sys
 import unittest
-from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
-
-from quarto4sbp.commands.pdf import cmd_pdf, export_pptx_to_pdf
 
 # Check if integration tests should run
 RUN_INTEGRATION_TESTS = os.environ.get("RUN_INTEGRATION_TESTS", "0") == "1"
@@ -46,7 +42,7 @@ class TestPdfIntegration(unittest.TestCase):
         3. Verify PDF is created with correct content
         """
         with TemporaryDirectory() as tmpdir:
-            directory = Path(tmpdir)
+            _ = Path(tmpdir)
 
             # For manual testing, you would:
             # 1. Copy a real PPTX file to the temp directory
@@ -75,7 +71,7 @@ class TestPdfIntegration(unittest.TestCase):
         See README for manual testing instructions.
         """
         with TemporaryDirectory() as tmpdir:
-            directory = Path(tmpdir)
+            _ = Path(tmpdir)
 
             # For manual testing:
             # 1. Create multiple PPTX files
