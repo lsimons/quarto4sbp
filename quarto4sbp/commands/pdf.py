@@ -1,7 +1,7 @@
 """Unified PDF export command for both PowerPoint and Word documents."""
 
 from quarto4sbp.commands.pdf_pptx import cmd_pdf_pptx
-from quarto4sbp.commands.pdf_doc import cmd_pdf_doc
+from quarto4sbp.commands.pdf_docx import cmd_pdf_docx
 
 
 def cmd_pdf(args: list[str]) -> int:
@@ -19,7 +19,7 @@ def cmd_pdf(args: list[str]) -> int:
     pptx_result = cmd_pdf_pptx(args)
 
     print("\n=== Exporting Word documents ===")
-    doc_result = cmd_pdf_doc(args)
+    doc_result = cmd_pdf_docx(args)
 
     # Return success only if both succeed
     if pptx_result == 0 and doc_result == 0:

@@ -8,7 +8,7 @@ A lightweight tool for working with quarto in Schuberg Philis Context.
 - [quarto](https://quarto.org/) CLI installed: try `brew install quarto` on mac
 - **Microsoft Office** (for PDF export):
   - **Microsoft PowerPoint** - required for `pdf-pptx` command
-  - **Microsoft Word** - required for `pdf-doc` command
+  - **Microsoft Word** - required for `pdf-docx` command
   - Note: The unified `pdf` command requires both applications
   - macOS only: PDF export uses AppleScript to automate Office applications
 
@@ -74,11 +74,14 @@ q4s help
 # Echo back arguments (useful for testing)
 q4s echo hello world
 
+# Create both PowerPoint and Word documents (unified)
+q4s new <directory>
+
 # Create new PowerPoint presentation
 q4s new-pptx <directory>
 
 # Create new Word document
-q4s new-doc <directory>
+q4s new-docx <directory>
 
 # Export all Office documents to PDF
 q4s pdf
@@ -87,7 +90,7 @@ q4s pdf
 q4s pdf-pptx
 
 # Export only Word documents to PDF
-q4s pdf-doc
+q4s pdf-docx
 ```
 
 **Examples:**
@@ -95,13 +98,19 @@ q4s pdf-doc
 #### Creating New Documents
 
 ```bash
-# Create a new PowerPoint presentation
+# Create both PowerPoint and Word documents with a single command
+$ q4s new my-project
+Created: my-project/my-project.qmd
+Outputs: Both PowerPoint (.pptx) and Word (.docx)
+Hint: Run 'cd my-project && ./render.sh' to generate both formats
+
+# Create a new PowerPoint presentation only
 $ q4s new-pptx my-presentation
 Created: my-presentation/my-presentation.qmd
 Hint: Run 'cd my-presentation && ./render.sh' to generate the presentation
 
-# Create a new Word document
-$ q4s new-doc my-document
+# Create a new Word document only
+$ q4s new-docx my-document
 Created: my-document/my-document.qmd
 Hint: Run 'cd my-document && ./render.sh' to generate the document
 ```
@@ -149,7 +158,7 @@ Exporting: presentation.pptx -> presentation.pdf
 Exported 1 file(s), skipped 0 file(s)
 
 # Export only Word documents
-$ q4s pdf-doc
+$ q4s pdf-docx
 Found 1 file(s) to export:
   - document.docx
 Exporting: document.docx -> document.pdf

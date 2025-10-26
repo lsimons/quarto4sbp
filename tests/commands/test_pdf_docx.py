@@ -1,4 +1,4 @@
-"""Unit tests for pdf-doc command."""
+"""Unit tests for pdf-docx command."""
 
 import sys
 import unittest
@@ -8,8 +8,8 @@ from tempfile import TemporaryDirectory
 from time import sleep
 from unittest.mock import MagicMock, patch
 
-from quarto4sbp.commands.pdf_doc import (
-    cmd_pdf_doc,
+from quarto4sbp.commands.pdf_docx import (
+    cmd_pdf_docx,
     export_docx_to_pdf,
     find_stale_docx,
 )
@@ -145,7 +145,7 @@ class TestFindStaleDocx(unittest.TestCase):
 class TestExportDocxToPdf(unittest.TestCase):
     """Tests for export_docx_to_pdf function."""
 
-    @patch("quarto4sbp.commands.pdf_doc.subprocess.run")
+    @patch("quarto4sbp.commands.pdf_docx.subprocess.run")
     def test_export_success(self, mock_run: MagicMock) -> None:
         """Test successful PDF export."""
         with TemporaryDirectory() as tmpdir:
@@ -172,7 +172,7 @@ class TestExportDocxToPdf(unittest.TestCase):
             self.assertTrue(pdf_file.exists())
             self.assertEqual(pdf_file.read_text(), "pdf content")
 
-    @patch("quarto4sbp.commands.pdf_doc.subprocess.run")
+    @patch("quarto4sbp.commands.pdf_docx.subprocess.run")
     def test_export_applescript_fails(self, mock_run: MagicMock) -> None:
         """Test handling of AppleScript failure."""
         with TemporaryDirectory() as tmpdir:
@@ -199,7 +199,7 @@ class TestExportDocxToPdf(unittest.TestCase):
             finally:
                 sys.stdout = old_stdout
 
-    @patch("quarto4sbp.commands.pdf_doc.subprocess.run")
+    @patch("quarto4sbp.commands.pdf_docx.subprocess.run")
     def test_export_pdf_not_created(self, mock_run: MagicMock) -> None:
         """Test handling when PDF is not created."""
         with TemporaryDirectory() as tmpdir:
@@ -223,8 +223,8 @@ class TestExportDocxToPdf(unittest.TestCase):
                 sys.stdout = old_stdout
 
 
-class TestCmdPdfDoc(unittest.TestCase):
-    """Tests for cmd_pdf_doc function."""
+class TestCmdPdfDocx(unittest.TestCase):
+    """Tests for cmd_pdf_docx function."""
 
     def setUp(self) -> None:
         """Set up test fixtures."""
@@ -245,13 +245,13 @@ class TestCmdPdfDoc(unittest.TestCase):
             sys.stdout = StringIO()
             sys.stderr = StringIO()
 
-            result = cmd_pdf_doc([str(directory)])
+            result = cmd_pdf_docx([str(directory)])
             output = sys.stdout.getvalue()
 
             self.assertEqual(result, 0)
             self.assertIn("No DOCX files need exporting", output)
 
-    @patch("quarto4sbp.commands.pdf_doc.export_docx_to_pdf")
+    @patch("quarto4sbp.commands.pdf_docx.export_docx_to_pdf")
     def test_export_single_file(self, mock_export: MagicMock) -> None:
         """Test exporting a single DOCX file."""
         with TemporaryDirectory() as tmpdir:
@@ -265,7 +265,7 @@ class TestCmdPdfDoc(unittest.TestCase):
             sys.stdout = StringIO()
             sys.stderr = StringIO()
 
-            result = cmd_pdf_doc([str(directory)])
+            result = cmd_pdf_docx([str(directory)])
             output = sys.stdout.getvalue()
 
             self.assertEqual(result, 0)
@@ -275,7 +275,7 @@ class TestCmdPdfDoc(unittest.TestCase):
             self.assertIn("Exported 1 file(s)", output)
             self.assertIn("skipped 0 file(s)", output)
 
-    @patch("quarto4sbp.commands.pdf_doc.export_docx_to_pdf")
+    @patch("quarto4sbp.commands.pdf_docx.export_docx_to_pdf")
     def test_export_multiple_files(self, mock_export: MagicMock) -> None:
         """Test exporting multiple DOCX files."""
         with TemporaryDirectory() as tmpdir:
@@ -291,14 +291,14 @@ class TestCmdPdfDoc(unittest.TestCase):
             sys.stdout = StringIO()
             sys.stderr = StringIO()
 
-            result = cmd_pdf_doc([str(directory)])
+            result = cmd_pdf_docx([str(directory)])
             output = sys.stdout.getvalue()
 
             self.assertEqual(result, 0)
             self.assertIn("Found 2 file(s) to export", output)
             self.assertIn("Exported 2 file(s)", output)
 
-    @patch("quarto4sbp.commands.pdf_doc.export_docx_to_pdf")
+    @patch("quarto4sbp.commands.pdf_docx.export_docx_to_pdf")
     def test_export_with_failures(self, mock_export: MagicMock) -> None:
         """Test handling of export failures."""
         with TemporaryDirectory() as tmpdir:
@@ -314,7 +314,7 @@ class TestCmdPdfDoc(unittest.TestCase):
             sys.stdout = StringIO()
             sys.stderr = StringIO()
 
-            result = cmd_pdf_doc([str(directory)])
+            result = cmd_pdf_docx([str(directory)])
             output = sys.stdout.getvalue()
 
             self.assertEqual(result, 0)
@@ -338,9 +338,9 @@ class TestCmdPdfDoc(unittest.TestCase):
                 sys.stderr = StringIO()
 
                 # Call without directory argument
-                with patch("quarto4sbp.commands.pdf_doc.export_docx_to_pdf") as mock:
+                with patch("quarto4sbp.commands.pdf_docx.export_docx_to_pdf") as mock:
                     mock.return_value = True
-                    result = cmd_pdf_doc([])
+                    result = cmd_pdf_docx([])
                     output = sys.stdout.getvalue()
 
                     self.assertEqual(result, 0)
@@ -353,7 +353,7 @@ class TestCmdPdfDoc(unittest.TestCase):
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
-        result = cmd_pdf_doc(["/nonexistent/directory"])
+        result = cmd_pdf_docx(["/nonexistent/directory"])
         output = sys.stdout.getvalue()
 
         self.assertEqual(result, 1)
@@ -370,7 +370,7 @@ class TestCmdPdfDoc(unittest.TestCase):
             sys.stdout = StringIO()
             sys.stderr = StringIO()
 
-            result = cmd_pdf_doc([str(file_path)])
+            result = cmd_pdf_docx([str(file_path)])
             output = sys.stdout.getvalue()
 
             self.assertEqual(result, 1)

@@ -22,7 +22,7 @@ class TestCmdPdf(unittest.TestCase):
         sys.stderr = self.old_stderr
 
     @patch("quarto4sbp.commands.pdf.cmd_pdf_pptx")
-    @patch("quarto4sbp.commands.pdf.cmd_pdf_doc")
+    @patch("quarto4sbp.commands.pdf.cmd_pdf_docx")
     def test_both_commands_succeed(
         self, mock_pdf_doc: MagicMock, mock_pdf_pptx: MagicMock
     ) -> None:
@@ -46,7 +46,7 @@ class TestCmdPdf(unittest.TestCase):
         mock_pdf_doc.assert_called_once_with([])
 
     @patch("quarto4sbp.commands.pdf.cmd_pdf_pptx")
-    @patch("quarto4sbp.commands.pdf.cmd_pdf_doc")
+    @patch("quarto4sbp.commands.pdf.cmd_pdf_docx")
     def test_pptx_fails(
         self, mock_pdf_doc: MagicMock, mock_pdf_pptx: MagicMock
     ) -> None:
@@ -68,7 +68,7 @@ class TestCmdPdf(unittest.TestCase):
         mock_pdf_doc.assert_called_once_with([])
 
     @patch("quarto4sbp.commands.pdf.cmd_pdf_pptx")
-    @patch("quarto4sbp.commands.pdf.cmd_pdf_doc")
+    @patch("quarto4sbp.commands.pdf.cmd_pdf_docx")
     def test_doc_fails(self, mock_pdf_doc: MagicMock, mock_pdf_pptx: MagicMock) -> None:
         """Test unified command when Word export fails."""
         mock_pdf_pptx.return_value = 0
@@ -88,7 +88,7 @@ class TestCmdPdf(unittest.TestCase):
         mock_pdf_doc.assert_called_once_with([])
 
     @patch("quarto4sbp.commands.pdf.cmd_pdf_pptx")
-    @patch("quarto4sbp.commands.pdf.cmd_pdf_doc")
+    @patch("quarto4sbp.commands.pdf.cmd_pdf_docx")
     def test_both_fail(self, mock_pdf_doc: MagicMock, mock_pdf_pptx: MagicMock) -> None:
         """Test unified command when both exports fail."""
         mock_pdf_pptx.return_value = 1
@@ -108,7 +108,7 @@ class TestCmdPdf(unittest.TestCase):
         mock_pdf_doc.assert_called_once_with([])
 
     @patch("quarto4sbp.commands.pdf.cmd_pdf_pptx")
-    @patch("quarto4sbp.commands.pdf.cmd_pdf_doc")
+    @patch("quarto4sbp.commands.pdf.cmd_pdf_docx")
     def test_with_directory_argument(
         self, mock_pdf_doc: MagicMock, mock_pdf_pptx: MagicMock
     ) -> None:
@@ -128,7 +128,7 @@ class TestCmdPdf(unittest.TestCase):
         mock_pdf_doc.assert_called_once_with(["/some/directory"])
 
     @patch("quarto4sbp.commands.pdf.cmd_pdf_pptx")
-    @patch("quarto4sbp.commands.pdf.cmd_pdf_doc")
+    @patch("quarto4sbp.commands.pdf.cmd_pdf_docx")
     def test_output_sections(
         self, mock_pdf_doc: MagicMock, mock_pdf_pptx: MagicMock
     ) -> None:

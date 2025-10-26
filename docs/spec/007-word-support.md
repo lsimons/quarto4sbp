@@ -5,18 +5,18 @@
 **Epic Tasks:**
 1. Rename `new` command to `new-pptx` and update spec-005 (q4s-38)
 2. Rename `pdf` command to `pdf-pptx` and update spec-006 (q4s-37)
-3. Implement `new-doc` command for Word documents
-4. Implement `pdf-doc` command for Word PDF export
-5. Create unified `pdf` command that calls both `pdf-pptx` and `pdf-doc` (q4s-36)
+3. Implement `new-docx` command for Word documents
+4. Implement `pdf-docx` command for Word PDF export
+5. Create unified `pdf` command that calls both `pdf-pptx` and `pdf-docx` (q4s-36)
 6. Create Word templates (qmd, docx, render.sh)
 7. Update README.md to document PowerPoint and Word as dependencies (q4s-39)
 8. Update documentation
 
 **Requirements:**
 - `q4s new-pptx <directory>` command to create new PowerPoint presentations (renamed from `new`)
-- `q4s new-doc <directory>` command to create new Word documents from template
+- `q4s new-docx <directory>` command to create new Word documents from template
 - `q4s pdf-pptx` command to export PPTX files to PDF (renamed from `pdf`)
-- `q4s pdf-doc` command to export DOCX files to PDF (when DOCX is newer than PDF)
+- `q4s pdf-docx` command to export DOCX files to PDF (when DOCX is newer than PDF)
 - `q4s pdf` unified command to export both PPTX and DOCX files to PDF
 - Word document template with proper Quarto frontmatter
 - Unified render script supporting both PowerPoint and Word documents
@@ -35,9 +35,9 @@
 quarto4sbp/
   commands/
     new_pptx.py         # cmd_new_pptx() implementation (renamed from new.py)
-    new_doc.py          # cmd_new_doc() implementation (new)
+    new_docx.py         # cmd_new_docx() implementation (new)
     pdf_pptx.py         # cmd_pdf_pptx() implementation (renamed from pdf.py)
-    pdf_doc.py          # cmd_pdf_doc() implementation (new)
+    pdf_docx.py         # cmd_pdf_docx() implementation (new)
     pdf.py              # cmd_pdf() unified implementation (new)
 templates/
   simple-presentation.qmd   # PowerPoint template (existing)
@@ -48,9 +48,9 @@ templates/
 tests/
   commands/
     test_new_pptx.py    # Unit tests for new-pptx command (renamed)
-    test_new_doc.py     # Unit tests for new-doc command (new)
+    test_new_docx.py    # Unit tests for new-docx command (new)
     test_pdf_pptx.py    # Unit tests for pdf-pptx command (renamed)
-    test_pdf_doc.py     # Unit tests for pdf-doc command (new)
+    test_pdf_docx.py    # Unit tests for pdf-docx command (new)
     test_pdf.py         # Unit tests for unified pdf command (new)
     test_pdf_pptx_integration.py  # Integration tests for pptx (renamed)
     test_pdf_doc_integration.py   # Integration tests for docx (new)
@@ -81,10 +81,10 @@ tests/
 - Stored in `templates/` directory
 - Symlinked into document directories (like PowerPoint template)
 
-## new-doc Command
+## new-docx Command
 
 **API Design:**
-- `cmd_new_doc(args: list[str]) -> int` - Handle new-doc subcommand
+- `cmd_new_docx(args: list[str]) -> int` - Handle new-docx subcommand
   - Takes directory name as argument
   - Returns 0 on success, 1 on error
 
@@ -111,10 +111,10 @@ tests/
 - Verify render.sh contains correct document name
 - Use temporary directories for testing
 
-## pdf-doc Command
+## pdf-docx Command
 
 **API Design:**
-- `cmd_pdf_doc(args: list[str]) -> int` - Handle pdf-doc subcommand
+- `cmd_pdf_docx(args: list[str]) -> int` - Handle pdf-docx subcommand
   - Takes optional directory argument (defaults to current directory)
   - Returns 0 on success, 1 on error
 - `find_stale_docx(directory: Path) -> list[Path]` - Find DOCX files needing export
@@ -179,17 +179,17 @@ end tell
 **CLI Integration:**
 Add to `cli.py` command dispatcher:
 ```python
-elif command == "new-doc":
-    from quarto4sbp.commands.new_doc import cmd_new_doc
-    return cmd_new_doc(args[1:])
-elif command == "pdf-doc":
-    from quarto4sbp.commands.pdf_doc import cmd_pdf_doc
-    return cmd_pdf_doc(args[1:])
+elif command == "new-docx":
+    from quarto4sbp.commands.new_docx import cmd_new_docx
+    return cmd_new_docx(args[1:])
+elif command == "pdf-docx":
+    from quarto4sbp.commands.pdf_docx import cmd_pdf_docx
+    return cmd_pdf_docx(args[1:])
 ```
 
 Update help text to include:
-- `new-doc   Create a new Word document from template`
-- `pdf-doc   Export DOCX files to PDF (when DOCX is newer)`
+- `new-docx  Create a new Word document from template`
+- `pdf-docx  Export DOCX files to PDF (when DOCX is newer)`
 
 **Documentation Updates:**
 - Add Word support to README.md with examples
@@ -222,7 +222,7 @@ Update help text to include:
 - Update help text to show all three commands:
   - `pdf        Export all Office documents (PPTX and DOCX) to PDF`
   - `pdf-pptx   Export PPTX files to PDF (when PPTX is newer)`
-  - `pdf-doc    Export DOCX files to PDF (when DOCX is newer)`
+  - `pdf-docx   Export DOCX files to PDF (when DOCX is newer)`
 
 ## Unified Render Script
 
@@ -230,7 +230,7 @@ Update help text to include:
 
 **Design:**
 - One `render.sh.template` in `templates/` directory
-- Used by both `new-pptx` and `new-doc` commands
+- Used by both `new-pptx` and `new-docx` commands
 - Calls `quarto render` followed by unified `q4s pdf` command
 - The unified `pdf` command automatically handles both PPTX and DOCX files
 - Template uses `{{FILE_NAME}}` placeholder (more generic than PRESENTATION_NAME or DOCUMENT_NAME)
@@ -311,14 +311,14 @@ fi
 **Task 4: Update README.md dependencies (q4s-39)**
 - Add Microsoft Office section to Prerequisites
 - Document PowerPoint requirement for `pdf-pptx` command
-- Document Word requirement for `pdf-doc` command
+- Document Word requirement for `pdf-docx` command
 - Note that unified `pdf` command requires both for full functionality
 - Specify macOS requirement for AppleScript-based PDF export
 - Add examples for both PowerPoint and Word workflows
 
 **Naming Convention Summary:**
 - **PowerPoint:** `new-pptx`, `pdf-pptx`, `simple-presentation.*`
-- **Word:** `new-doc`, `pdf-doc`, `simple-document.*`
-- **Unified:** `pdf` (calls both `pdf-pptx` and `pdf-doc`), `render.sh` (works for both formats)
+- **Word:** `new-docx`, `pdf-docx`, `simple-document.*`
+- **Unified:** `pdf` (calls both `pdf-pptx` and `pdf-docx`), `render.sh` (works for both formats)
 
 **Status:** Not yet implemented

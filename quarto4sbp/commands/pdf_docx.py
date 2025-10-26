@@ -101,8 +101,8 @@ end tell
         return False
 
 
-def cmd_pdf_doc(args: list[str]) -> int:
-    """Handle the pdf-doc subcommand.
+def cmd_pdf_docx(args: list[str]) -> int:
+    """Handle the pdf-docx subcommand.
 
     Args:
         args: Optional directory argument (defaults to current directory)

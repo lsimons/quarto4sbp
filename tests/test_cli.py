@@ -101,8 +101,8 @@ class TestMain(unittest.TestCase):
             finally:
                 sys.stdout = old_stdout
 
-    def test_new_doc_command(self) -> None:
-        """Test new-doc command integration."""
+    def test_new_docx_command(self) -> None:
+        """Test new-docx command integration."""
         with TemporaryDirectory() as tmpdir:
             import os
 
@@ -112,7 +112,7 @@ class TestMain(unittest.TestCase):
 
             try:
                 os.chdir(tmpdir)
-                result = main(["new-doc", "test-doc"])
+                result = main(["new-docx", "test-doc"])
                 output = sys.stdout.getvalue()
 
                 self.assertEqual(result, 0)
@@ -121,19 +121,42 @@ class TestMain(unittest.TestCase):
                 os.chdir(old_cwd)
                 sys.stdout = old_stdout
 
-    def test_pdf_doc_command(self) -> None:
-        """Test pdf-doc command integration."""
+    def test_pdf_docx_command(self) -> None:
+        """Test pdf-docx command integration."""
         with TemporaryDirectory() as tmpdir:
             old_stdout = sys.stdout
             sys.stdout = StringIO()
 
             try:
-                result = main(["pdf-doc", tmpdir])
+                result = main(["pdf-docx", tmpdir])
                 output = sys.stdout.getvalue()
 
                 self.assertEqual(result, 0)
                 self.assertIn("No DOCX files need exporting", output)
             finally:
+                sys.stdout = old_stdout
+
+    def test_new_command(self) -> None:
+        """Test unified new command integration."""
+        with TemporaryDirectory() as tmpdir:
+            import os
+
+            old_cwd = os.getcwd()
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+
+            try:
+                os.chdir(tmpdir)
+                result = main(["new", "test-project"])
+                output = sys.stdout.getvalue()
+
+                self.assertEqual(result, 0)
+                self.assertIn("Created: test-project/test-project.qmd", output)
+                self.assertIn(
+                    "Outputs: Both PowerPoint (.pptx) and Word (.docx)", output
+                )
+            finally:
+                os.chdir(old_cwd)
                 sys.stdout = old_stdout
 
     def test_pdf_command(self) -> None:
@@ -198,8 +221,8 @@ class TestCLIIntegration(unittest.TestCase):
         self.assertIn("help", result.stdout)
         self.assertIn("echo", result.stdout)
 
-    def test_cli_new_doc(self) -> None:
-        """Test CLI new-doc command via subprocess."""
+    def test_cli_new_docx(self) -> None:
+        """Test CLI new-docx command via subprocess."""
         import shutil
         import tempfile
         from pathlib import Path
@@ -208,7 +231,7 @@ class TestCLIIntegration(unittest.TestCase):
         temp_dir = tempfile.mkdtemp()
         try:
             result = subprocess.run(
-                ["uv", "run", "q4s", "new-doc", "test-doc"],
+                ["uv", "run", "q4s", "new-docx", "test-doc"],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -222,6 +245,40 @@ class TestCLIIntegration(unittest.TestCase):
             # Verify files were created
             qmd_file = Path(temp_dir) / "test-doc" / "test-doc.qmd"
             self.assertTrue(qmd_file.exists())
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_cli_new(self) -> None:
+        """Test CLI new command via subprocess."""
+        import shutil
+        import tempfile
+        from pathlib import Path
+
+        # Create a temporary directory for the test
+        temp_dir = tempfile.mkdtemp()
+        try:
+            result = subprocess.run(
+                ["uv", "run", "q4s", "new", "test-project"],
+                capture_output=True,
+                text=True,
+                check=False,
+                cwd=temp_dir,
+            )
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("Created: test-project/test-project.qmd", result.stdout)
+            self.assertIn(
+                "Outputs: Both PowerPoint (.pptx) and Word (.docx)", result.stdout
+            )
+
+            # Verify QMD file was created
+            qmd_file = Path(temp_dir) / "test-project" / "test-project.qmd"
+            self.assertTrue(qmd_file.exists())
+
+            # Verify it has both output formats
+            content = qmd_file.read_text()
+            self.assertIn("pptx:", content)
+            self.assertIn("docx:", content)
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
 

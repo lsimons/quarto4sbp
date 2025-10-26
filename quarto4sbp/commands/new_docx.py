@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 
-def cmd_new_doc(args: list[str]) -> int:
+def cmd_new_docx(args: list[str]) -> int:
     """Create a new Quarto Word document from template.
 
     Args:
@@ -16,7 +16,7 @@ def cmd_new_doc(args: list[str]) -> int:
     """
     if len(args) == 0:
         print("Error: Directory name required", file=sys.stderr)
-        print("Usage: q4s new-doc <directory>", file=sys.stderr)
+        print("Usage: q4s new-docx <directory>", file=sys.stderr)
         return 1
 
     dir_name = args[0]
@@ -35,7 +35,7 @@ def cmd_new_doc(args: list[str]) -> int:
     render_script = target_dir / "render.sh"
 
     # Find the templates directory relative to this file
-    # quarto4sbp/commands/new_doc.py -> quarto4sbp -> project root -> templates
+    # quarto4sbp/commands/new_docx.py -> quarto4sbp -> project root -> templates
     project_root = Path(__file__).parent.parent.parent
     template_qmd = project_root / "templates" / "simple-document.qmd"
     template_docx = project_root / "templates" / "simple-document.docx"
