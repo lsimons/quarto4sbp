@@ -1,0 +1,21 @@
+"""Help command for q4s CLI."""
+
+
+def cmd_help() -> int:
+    """Handle the help subcommand.
+
+    Returns:
+        Exit code (0 for success)
+    """
+    print("q4s - quarto4sbp CLI tool")
+    print()
+    print("Usage: q4s <command> [arguments]")
+    print()
+    print("Available commands:")
+    print("  help       Show this help message")
+    print("  echo       Echo back the command-line arguments")
+    print()
+    print("Examples:")
+    print("  q4s help")
+    print("  q4s echo hello world")
+    return 0

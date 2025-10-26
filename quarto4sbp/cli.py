@@ -3,38 +3,7 @@
 import argparse
 import sys
 
-
-def cmd_help() -> int:
-    """Handle the help subcommand.
-
-    Returns:
-        Exit code (0 for success)
-    """
-    print("q4s - quarto4sbp CLI tool")
-    print()
-    print("Usage: q4s <command> [arguments]")
-    print()
-    print("Available commands:")
-    print("  help       Show this help message")
-    print("  echo       Echo back the command-line arguments")
-    print()
-    print("Examples:")
-    print("  q4s help")
-    print("  q4s echo hello world")
-    return 0
-
-
-def cmd_echo(args: list[str]) -> int:
-    """Handle the echo subcommand.
-
-    Args:
-        args: Arguments to echo back
-
-    Returns:
-        Exit code (0 for success)
-    """
-    print(" ".join(args))
-    return 0
+from quarto4sbp.commands import cmd_echo, cmd_help
 
 
 def main(args: list[str] | None = None) -> int:
