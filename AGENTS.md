@@ -76,13 +76,14 @@ bd close bd-42 --reason "Completed" --json
    - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id> --json`
 6. **Run tests**: `uv run pytest -v` (all tests must pass)
 7. **Run type checking**: `uv run pyright` (must have 0 errors, 0 warnings)
-8. **Commit everything**: `git add -A && git commit -m "..."` (includes `.beads/issues.jsonl`)
-9. **For epics, create PR**: 
+8. **Run tests with coverage**: `uv run pytest --cov=quarto4sbp --cov-report=term --cov-fail-under=80` (coverage must be ≥80%)
+9. **Commit everything**: `git add -A && git commit -m "..."` (includes `.beads/issues.jsonl`)
+10. **For epics, create PR**: 
    - Push: `git push -u origin branch-name`
    - Create PR: `gh pr create --title "..." --body "..."`
    - Wait for CI: `gh pr checks --watch`
    - Fix any CI failures and push fixes
-10. **Close the issue**: `bd close <id> --reason "Description of what was done" --json`
+11. **Close the issue**: `bd close <id> --reason "Description of what was done" --json`
 
 ### Auto-Sync
 
@@ -269,6 +270,9 @@ uv run pyright
 - Ensure all tests pass locally before pushing
 - Integration tests are preferred over mocking when practical
 - Test files should mirror code structure (e.g., `tests/commands/test_feature.py` for `quarto4sbp/commands/feature.py`)
+- Maintain minimum 80% test coverage - run `uv run pytest --cov=quarto4sbp --cov-report=term --cov-fail-under=80` before creating PRs
+</text>
+
 
 **Type Checking Requirements:**
 - All code must have complete type annotations

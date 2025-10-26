@@ -141,7 +141,18 @@ uv run pytest tests/my_test_file.py
 
 # With verbose output
 uv run pytest -v
+
+# Run tests with coverage report
+uv run pytest --cov=quarto4sbp --cov-report=term-missing
+
+# Check coverage meets minimum threshold (80%)
+uv run pytest --cov=quarto4sbp --cov-report=term --cov-fail-under=80
 ```
+
+**Coverage Requirements:**
+- Minimum test coverage: 80%
+- Coverage is enforced in CI - builds will fail if coverage drops below threshold
+- Run coverage checks before creating PRs
 
 ### Type Checking
 
