@@ -2,9 +2,6 @@
 title: "Caseum"
 subtitle: "Introducing a lightweight approach to software architecture"
 author: "Leo Simons"
-mainfont: Merriweather
-sansfont: Merriweather Sans
-monofont: Cascadia Code
 format:
   pptx:
     reference-doc: ../../templates/simple-presentation.pptx
