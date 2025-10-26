@@ -108,6 +108,8 @@ class TestCmdNew(unittest.TestCase):
         self.assertIn('PRESENTATION_NAME="test-presentation"', render_content)
         self.assertIn("${PRESENTATION_NAME}.qmd", render_content)
         self.assertIn("#!/bin/sh", render_content)
+        self.assertIn("q4s pdf", render_content)
+        self.assertIn("Successfully created ${PRESENTATION_NAME}.pdf", render_content)
 
     def test_new_directory_already_exists(self) -> None:
         """Test new command when directory already exists but qmd doesn't."""

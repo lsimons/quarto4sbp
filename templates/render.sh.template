@@ -11,6 +11,16 @@ quarto render "${PRESENTATION_NAME}.qmd"
 
 if [ $? -eq 0 ]; then
     echo "✓ Successfully created ${PRESENTATION_NAME}.pptx"
+
+    echo "Exporting ${PRESENTATION_NAME}.pptx to PDF..."
+    q4s pdf
+
+    if [ $? -eq 0 ]; then
+        echo "✓ Successfully created ${PRESENTATION_NAME}.pdf"
+    else
+        echo "✗ PDF export failed"
+        exit 1
+    fi
 else
     echo "✗ Rendering failed"
     exit 1
