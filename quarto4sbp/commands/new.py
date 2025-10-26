@@ -129,8 +129,8 @@ def hello():
         return 1
 
     # Create symlinks to both templates
-    created_symlinks = []
-    failed_symlinks = []
+    created_symlinks: list[str] = []
+    failed_symlinks: list[tuple[str, Path, OSError]] = []
 
     # PowerPoint symlink
     try:
