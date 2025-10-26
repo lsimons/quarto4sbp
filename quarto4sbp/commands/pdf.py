@@ -1,8 +1,6 @@
 """PDF command for q4s CLI."""
 
-import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 
 
@@ -53,76 +51,10 @@ def find_stale_pptx(directory: Path) -> list[Path]:
     return stale_files
 
 
-def create_temp_export_dir() -> Path:
-    """Create a temporary directory for PowerPoint export.
-
-    Returns:
-        Path to temporary directory
-
-    Raises:
-        OSError: If temporary directory creation fails
-    """
-    temp_dir = Path(tempfile.mkdtemp(prefix="q4s-pdf-"))
-    return temp_dir
-
-
-def prepare_file_for_export(pptx_path: Path, temp_dir: Path) -> tuple[Path, Path]:
-    """Copy PPTX file to temporary directory for export.
-
-    Args:
-        pptx_path: Path to original PPTX file
-        temp_dir: Temporary directory for export
-
-    Returns:
-        Tuple of (temp_pptx_path, temp_pdf_path) for export
-
-    Raises:
-        OSError: If file copy fails
-    """
-    temp_pptx = temp_dir / pptx_path.name
-    shutil.copy2(pptx_path, temp_pptx)
-
-    # Calculate where PDF will be created
-    temp_pdf = temp_pptx.with_suffix(".pdf")
-
-    return temp_pptx, temp_pdf
-
-
-def copy_pdf_to_destination(temp_pdf: Path, dest_pdf: Path) -> None:
-    """Copy exported PDF from temporary directory to destination.
-
-    Args:
-        temp_pdf: Path to PDF in temporary directory
-        dest_pdf: Destination path for PDF
-
-    Raises:
-        OSError: If file copy fails
-    """
-    shutil.copy2(temp_pdf, dest_pdf)
-
-
-def cleanup_temp_dir(temp_dir: Path) -> None:
-    """Remove temporary directory and all its contents.
-
-    Args:
-        temp_dir: Temporary directory to remove
-    """
-    try:
-        shutil.rmtree(temp_dir)
-    except OSError:
-        # Best effort cleanup - don't fail if cleanup fails
-        pass
-
-
 def export_pptx_to_pdf(pptx_path: Path) -> bool:
     """Export a PPTX file to PDF using PowerPoint via AppleScript.
 
-    This function handles the complete export workflow:
-    1. Creates temporary directory for sandboxed PowerPoint
-    2. Copies PPTX to temp directory
-    3. Invokes PowerPoint via AppleScript to export PDF
-    4. Copies PDF back to original location
-    5. Cleans up temporary directory
+    Exports directly in the current directory where the PPTX file is located.
 
     Args:
         pptx_path: Path to PPTX file to export
@@ -130,20 +62,16 @@ def export_pptx_to_pdf(pptx_path: Path) -> bool:
     Returns:
         True if export succeeded, False otherwise
     """
-    temp_dir = None
     try:
-        # Create temporary directory
-        temp_dir = create_temp_export_dir()
-
-        # Prepare file for export
-        temp_pptx, temp_pdf = prepare_file_for_export(pptx_path, temp_dir)
+        # Calculate PDF path
+        pdf_path = pptx_path.with_suffix(".pdf")
 
         # Build AppleScript to export PDF
         applescript = f"""
 tell application "Microsoft PowerPoint"
-    open POSIX file "{temp_pptx}"
+    open POSIX file "{pptx_path.resolve()}"
     set theDoc to active presentation
-    save theDoc in POSIX file "{temp_pdf}" as save as PDF
+    save theDoc in POSIX file "{pdf_path.resolve()}" as save as PDF
     close theDoc
 end tell
 """
@@ -157,13 +85,9 @@ end tell
         )
 
         # Check if PDF was created
-        if not temp_pdf.exists():
+        if not pdf_path.exists():
             print(f"Error: PowerPoint did not create PDF for {pptx_path.name}")
             return False
-
-        # Copy PDF to destination
-        dest_pdf = pptx_path.with_suffix(".pdf")
-        copy_pdf_to_destination(temp_pdf, dest_pdf)
 
         return True
 
@@ -175,10 +99,6 @@ end tell
     except OSError as e:
         print(f"Error: File operation failed for {pptx_path.name}: {e}")
         return False
-    finally:
-        # Always clean up temp directory
-        if temp_dir:
-            cleanup_temp_dir(temp_dir)
 
 
 def cmd_pdf(args: list[str]) -> int:

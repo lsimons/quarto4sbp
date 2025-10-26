@@ -9,15 +9,14 @@
   - No corresponding PDF exists, OR
   - PPTX modification time is newer than PDF modification time
 - Use Microsoft PowerPoint via AppleScript for export
-- Handle macOS sandbox restrictions by using temporary folders
+- Export directly in the directory where PPTX files are located
 - Skip PPTX files that are templates (in `templates/` directory or symlinks)
 - Integration tests marked as optional (not run in CI by default)
 
 **Design Approach:**
-- Follow dependency-free core philosophy (stdlib only: os, pathlib, sys, subprocess, tempfile, shutil)
+- Follow dependency-free core philosophy (stdlib only: os, pathlib, sys, subprocess)
 - Use AppleScript to control PowerPoint for PDF export
-- Work around macOS sandbox by copying files to `/tmp/` subdirectory before export
-- Clean up temporary files after export
+- Export directly in place - no temporary directory needed
 - Provide clear user feedback on which files are being exported
 - Graceful error handling if PowerPoint is not installed or AppleScript fails
 
@@ -40,10 +39,7 @@ tests/
   - Returns list of PPTX files that need PDF export
   - Excludes symlinks and files in `templates/` directory
 - `export_pptx_to_pdf(pptx_path: Path) -> bool` - Export single PPTX to PDF
-  - Copies PPTX to temporary folder
-  - Invokes PowerPoint via AppleScript
-  - Copies PDF back to original location
-  - Cleans up temporary folder
+  - Invokes PowerPoint via AppleScript to export PDF in place
   - Returns True on success, False on failure
 
 **Behavior:**
@@ -53,11 +49,7 @@ tests/
    - Check if corresponding `.pdf` exists
    - If PDF doesn't exist or is older than PPTX:
      - Print: `Exporting: <filename>.pptx -> <filename>.pdf`
-     - Create temporary subdirectory in `/tmp/q4s-pdf-<random>/`
-     - Copy PPTX to temp directory
-     - Invoke AppleScript to export PDF via PowerPoint
-     - Copy PDF from temp directory to original location
-     - Remove temporary subdirectory
+     - Invoke AppleScript to export PDF via PowerPoint directly in place
    - If PDF is up-to-date:
      - Print: `Skipping: <filename>.pdf is up to date`
 4. Print summary: `Exported X file(s), skipped Y file(s)`
@@ -65,12 +57,10 @@ tests/
 **AppleScript Design:**
 ```applescript
 tell application "Microsoft PowerPoint"
-    activate
-    open POSIX file "/tmp/q4s-pdf-XXXXX/presentation.pptx"
+    open POSIX file "/full/path/to/presentation.pptx"
     set theDoc to active presentation
-    save theDoc in POSIX file "/tmp/q4s-pdf-XXXXX/presentation.pdf" as save as PDF
+    save theDoc in POSIX file "/full/path/to/presentation.pdf" as save as PDF
     close theDoc
-    quit
 end tell
 ```
 
@@ -79,7 +69,6 @@ end tell
   - Test `find_stale_pptx()` with various file scenarios
   - Test file filtering (symlinks, templates)
   - Test modification time comparison logic
-  - Test temporary folder creation and cleanup
   - Mock AppleScript invocation
   - Use temporary test directories
   
@@ -97,11 +86,9 @@ end tell
 
 **Implementation Notes:**
 - Use `pathlib.Path.stat().st_mtime` for modification time comparison
-- Use `tempfile.mkdtemp(prefix='q4s-pdf-')` for temporary directory
-- Use `shutil.copy2()` to preserve timestamps when copying
 - Use `subprocess.run(['osascript', '-e', script])` to execute AppleScript
+- Use `pptx_path.resolve()` to get absolute paths for AppleScript
 - Catch and report `CalledProcessError` from subprocess with user-friendly messages
-- Ensure temporary directory cleanup even on errors (try/finally)
 - Handle case where PowerPoint is not installed gracefully
 - Command should work in any directory containing PPTX files
 - Follow error handling patterns from DESIGN.md (graceful degradation, clear messages)
@@ -109,8 +96,6 @@ end tell
 **Error Handling:**
 - If PowerPoint not installed: Print error, suggest installing PowerPoint, exit 1
 - If AppleScript fails: Print error with details, continue to next file
-- If file permissions prevent copy: Print error, skip file, continue
-- If temp directory creation fails: Print error, exit 1
-- Always clean up temp directories, even on failure
+- If file operations fail: Print error, skip file, continue
 
 **Status:** Implemented

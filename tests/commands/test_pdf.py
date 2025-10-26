@@ -9,13 +9,9 @@ from time import sleep
 from unittest.mock import MagicMock, patch
 
 from quarto4sbp.commands.pdf import (
-    cleanup_temp_dir,
     cmd_pdf,
-    copy_pdf_to_destination,
-    create_temp_export_dir,
     export_pptx_to_pdf,
     find_stale_pptx,
-    prepare_file_for_export,
 )
 
 
@@ -146,98 +142,6 @@ class TestFindStalePptx(unittest.TestCase):
             self.assertNotIn(file3, result)
 
 
-class TestTempFolderManagement(unittest.TestCase):
-    """Tests for temporary folder management functions."""
-
-    def test_create_temp_export_dir(self) -> None:
-        """Test creating temporary export directory."""
-        temp_dir = create_temp_export_dir()
-        try:
-            self.assertTrue(temp_dir.exists())
-            self.assertTrue(temp_dir.is_dir())
-            # Check that directory name has correct prefix
-            self.assertTrue(temp_dir.name.startswith("q4s-pdf-"))
-        finally:
-            cleanup_temp_dir(temp_dir)
-
-    def test_prepare_file_for_export(self) -> None:
-        """Test preparing PPTX file for export."""
-        with TemporaryDirectory() as tmpdir:
-            source_dir = Path(tmpdir) / "source"
-            source_dir.mkdir()
-            pptx_file = source_dir / "presentation.pptx"
-            pptx_file.write_text("pptx content")
-
-            temp_dir = create_temp_export_dir()
-            try:
-                temp_pptx, temp_pdf = prepare_file_for_export(pptx_file, temp_dir)
-
-                # Check temp PPTX was created
-                self.assertTrue(temp_pptx.exists())
-                self.assertEqual(temp_pptx.name, "presentation.pptx")
-                self.assertEqual(temp_pptx.read_text(), "pptx content")
-
-                # Check temp PDF path is correct
-                self.assertEqual(temp_pdf.name, "presentation.pdf")
-                self.assertEqual(temp_pdf.parent, temp_dir)
-            finally:
-                cleanup_temp_dir(temp_dir)
-
-    def test_copy_pdf_to_destination(self) -> None:
-        """Test copying PDF from temp directory to destination."""
-        with TemporaryDirectory() as tmpdir:
-            temp_dir = Path(tmpdir) / "temp"
-            temp_dir.mkdir()
-            temp_pdf = temp_dir / "presentation.pdf"
-            temp_pdf.write_text("pdf content")
-
-            dest_dir = Path(tmpdir) / "dest"
-            dest_dir.mkdir()
-            dest_pdf = dest_dir / "presentation.pdf"
-
-            copy_pdf_to_destination(temp_pdf, dest_pdf)
-
-            self.assertTrue(dest_pdf.exists())
-            self.assertEqual(dest_pdf.read_text(), "pdf content")
-
-    def test_cleanup_temp_dir(self) -> None:
-        """Test cleaning up temporary directory."""
-        temp_dir = create_temp_export_dir()
-        # Create some files in temp dir
-        (temp_dir / "file1.txt").write_text("test1")
-        (temp_dir / "file2.txt").write_text("test2")
-
-        cleanup_temp_dir(temp_dir)
-
-        self.assertFalse(temp_dir.exists())
-
-    def test_cleanup_temp_dir_nonexistent(self) -> None:
-        """Test cleanup doesn't fail on nonexistent directory."""
-        temp_dir = Path("/tmp/nonexistent-q4s-pdf-dir")
-        # Should not raise an exception
-        cleanup_temp_dir(temp_dir)
-
-    def test_prepare_file_preserves_timestamps(self) -> None:
-        """Test that prepare_file_for_export preserves timestamps."""
-        with TemporaryDirectory() as tmpdir:
-            source_dir = Path(tmpdir) / "source"
-            source_dir.mkdir()
-            pptx_file = source_dir / "presentation.pptx"
-            pptx_file.write_text("pptx content")
-
-            original_mtime = pptx_file.stat().st_mtime
-
-            temp_dir = create_temp_export_dir()
-            try:
-                temp_pptx, _ = prepare_file_for_export(pptx_file, temp_dir)
-                temp_mtime = temp_pptx.stat().st_mtime
-
-                # shutil.copy2 should preserve timestamps
-                self.assertEqual(temp_mtime, original_mtime)
-            finally:
-                cleanup_temp_dir(temp_dir)
-
-
 class TestExportPptxToPdf(unittest.TestCase):
     """Tests for export_pptx_to_pdf function."""
 
@@ -252,20 +156,15 @@ class TestExportPptxToPdf(unittest.TestCase):
             # Mock successful subprocess execution
             mock_run.return_value = MagicMock(returncode=0, stderr="")
 
-            # We need to mock the temp PDF creation since AppleScript won't run
-            original_prepare = prepare_file_for_export
+            # Mock PDF creation since AppleScript won't actually run
+            def create_pdf(*args: object, **kwargs: object) -> MagicMock:
+                pdf_file = directory / "presentation.pdf"
+                pdf_file.write_text("pdf content")
+                return mock_run.return_value
 
-            def mock_prepare(pptx_path: Path, temp_dir: Path) -> tuple[Path, Path]:
-                temp_pptx, temp_pdf = original_prepare(pptx_path, temp_dir)
-                # Simulate PowerPoint creating the PDF
-                temp_pdf.write_text("pdf content")
-                return temp_pptx, temp_pdf
+            mock_run.side_effect = create_pdf
 
-            with patch(
-                "quarto4sbp.commands.pdf.prepare_file_for_export",
-                side_effect=mock_prepare,
-            ):
-                result = export_pptx_to_pdf(pptx_file)
+            result = export_pptx_to_pdf(pptx_file)
 
             self.assertTrue(result)
             # Check PDF was created in original location
@@ -320,43 +219,6 @@ class TestExportPptxToPdf(unittest.TestCase):
                 self.assertFalse(result)
                 self.assertIn("Error:", output)
                 self.assertIn("did not create PDF", output)
-            finally:
-                sys.stdout = old_stdout
-
-    @patch("quarto4sbp.commands.pdf.subprocess.run")
-    def test_export_cleans_up_temp_dir(self, mock_run: MagicMock) -> None:
-        """Test that temp directory is cleaned up even on error."""
-        with TemporaryDirectory() as tmpdir:
-            directory = Path(tmpdir)
-            pptx_file = directory / "presentation.pptx"
-            pptx_file.write_text("pptx content")
-
-            # Mock failed subprocess
-            import subprocess
-
-            mock_run.side_effect = subprocess.CalledProcessError(1, "osascript")
-
-            # Capture temp directories created
-            temp_dirs_created: list[Path] = []
-            original_create = create_temp_export_dir
-
-            def track_create() -> Path:
-                temp_dir = original_create()
-                temp_dirs_created.append(temp_dir)
-                return temp_dir
-
-            old_stdout = sys.stdout
-            sys.stdout = StringIO()
-            try:
-                with patch(
-                    "quarto4sbp.commands.pdf.create_temp_export_dir",
-                    side_effect=track_create,
-                ):
-                    _ = export_pptx_to_pdf(pptx_file)
-
-                # Verify temp directory was cleaned up
-                for temp_dir in temp_dirs_created:
-                    self.assertFalse(temp_dir.exists())
             finally:
                 sys.stdout = old_stdout
 
