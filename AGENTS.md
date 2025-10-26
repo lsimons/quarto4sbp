@@ -11,7 +11,27 @@ This document provides instructions for AI code-generation agents to ensure cons
 
 ## Project Overview
 
-TODO
+**quarto4sbp** is a lightweight CLI tool for working with [Quarto](https://quarto.org/) documents in Schuberg Philis context.
+
+**What it does:**
+- Creates Quarto projects from templates (PowerPoint presentations, Word documents, or both)
+- Automates PDF export from Office documents via AppleScript (macOS)
+- Provides unified workflows for multi-format document creation
+- Tracks staleness to avoid unnecessary re-exports
+
+**Key commands:**
+- `q4s new` - Create both PowerPoint and Word outputs from single source
+- `q4s new-pptx` / `q4s new-docx` - Create format-specific projects
+- `q4s pdf` - Export all Office documents to PDF
+- `q4s pdf-pptx` / `q4s pdf-docx` - Export specific formats
+
+**Architecture:**
+- Dependency-free core (Python stdlib only)
+- Template-based project creation with symlinked reference documents
+- Double-extension PDF naming (`.pptx.pdf`, `.docx.pdf`) to preserve provenance
+- AppleScript automation for Microsoft Office (requires PowerPoint/Word on macOS)
+
+See [README.md](README.md) for usage examples and [DESIGN.md](DESIGN.md) for architectural decisions.
 
 ## Issue Tracking with bd (beads)
 
@@ -129,7 +149,42 @@ For more details, see README.md.
 
 ## Building and Running
 
-TODO
+### Setup
+```bash
+# Create virtual environment
+uv venv
+
+# Install package in editable mode
+uv pip install -e .
+
+# Install q4s shim (optional but recommended)
+python install.py
+```
+
+### Running
+```bash
+# With shim installed
+q4s help
+q4s new my-project
+
+# Without shim
+uv run q4s help
+uv run q4s new my-project
+```
+
+### Testing
+```bash
+# Run all tests
+uv run pytest -v
+
+# Run with coverage
+uv run pytest --cov=quarto4sbp --cov-report=term --cov-fail-under=80
+
+# Type checking
+uv run pyright
+```
+
+See [README.md](README.md) for detailed installation and usage instructions.
 
 ## Refactoring Workflow
 
