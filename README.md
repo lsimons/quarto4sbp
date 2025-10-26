@@ -35,7 +35,6 @@ After installation, you can use `q4s` directly:
 
 ```bash
 q4s help
-q4s echo hello world
 ```
 
 **Note:** Ensure `~/.local/bin` is in your PATH. If not, add this to your `~/.bashrc` or `~/.zshrc`:
@@ -70,9 +69,6 @@ The `q4s` CLI provides utilities for working with Quarto presentations and docum
 ```bash
 # Show help
 q4s help
-
-# Echo back arguments (useful for testing)
-q4s echo hello world
 
 # Create both PowerPoint and Word documents (unified)
 q4s new <directory>
