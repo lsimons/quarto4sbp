@@ -7,7 +7,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import sleep
 
-from quarto4sbp.commands.pdf import cmd_pdf, find_stale_pptx
+from quarto4sbp.commands.pdf import (
+    cleanup_temp_dir,
+    cmd_pdf,
+    copy_pdf_to_destination,
+    create_temp_export_dir,
+    find_stale_pptx,
+    prepare_file_for_export,
+)
 
 
 class TestFindStalePptx(unittest.TestCase):
@@ -135,6 +142,98 @@ class TestFindStalePptx(unittest.TestCase):
             self.assertIn(file1, result)
             self.assertIn(file2, result)
             self.assertNotIn(file3, result)
+
+
+class TestTempFolderManagement(unittest.TestCase):
+    """Tests for temporary folder management functions."""
+
+    def test_create_temp_export_dir(self) -> None:
+        """Test creating temporary export directory."""
+        temp_dir = create_temp_export_dir()
+        try:
+            self.assertTrue(temp_dir.exists())
+            self.assertTrue(temp_dir.is_dir())
+            # Check that directory name has correct prefix
+            self.assertTrue(temp_dir.name.startswith("q4s-pdf-"))
+        finally:
+            cleanup_temp_dir(temp_dir)
+
+    def test_prepare_file_for_export(self) -> None:
+        """Test preparing PPTX file for export."""
+        with TemporaryDirectory() as tmpdir:
+            source_dir = Path(tmpdir) / "source"
+            source_dir.mkdir()
+            pptx_file = source_dir / "presentation.pptx"
+            pptx_file.write_text("pptx content")
+
+            temp_dir = create_temp_export_dir()
+            try:
+                temp_pptx, temp_pdf = prepare_file_for_export(pptx_file, temp_dir)
+
+                # Check temp PPTX was created
+                self.assertTrue(temp_pptx.exists())
+                self.assertEqual(temp_pptx.name, "presentation.pptx")
+                self.assertEqual(temp_pptx.read_text(), "pptx content")
+
+                # Check temp PDF path is correct
+                self.assertEqual(temp_pdf.name, "presentation.pdf")
+                self.assertEqual(temp_pdf.parent, temp_dir)
+            finally:
+                cleanup_temp_dir(temp_dir)
+
+    def test_copy_pdf_to_destination(self) -> None:
+        """Test copying PDF from temp directory to destination."""
+        with TemporaryDirectory() as tmpdir:
+            temp_dir = Path(tmpdir) / "temp"
+            temp_dir.mkdir()
+            temp_pdf = temp_dir / "presentation.pdf"
+            temp_pdf.write_text("pdf content")
+
+            dest_dir = Path(tmpdir) / "dest"
+            dest_dir.mkdir()
+            dest_pdf = dest_dir / "presentation.pdf"
+
+            copy_pdf_to_destination(temp_pdf, dest_pdf)
+
+            self.assertTrue(dest_pdf.exists())
+            self.assertEqual(dest_pdf.read_text(), "pdf content")
+
+    def test_cleanup_temp_dir(self) -> None:
+        """Test cleaning up temporary directory."""
+        temp_dir = create_temp_export_dir()
+        # Create some files in temp dir
+        (temp_dir / "file1.txt").write_text("test1")
+        (temp_dir / "file2.txt").write_text("test2")
+
+        cleanup_temp_dir(temp_dir)
+
+        self.assertFalse(temp_dir.exists())
+
+    def test_cleanup_temp_dir_nonexistent(self) -> None:
+        """Test cleanup doesn't fail on nonexistent directory."""
+        temp_dir = Path("/tmp/nonexistent-q4s-pdf-dir")
+        # Should not raise an exception
+        cleanup_temp_dir(temp_dir)
+
+    def test_prepare_file_preserves_timestamps(self) -> None:
+        """Test that prepare_file_for_export preserves timestamps."""
+        with TemporaryDirectory() as tmpdir:
+            source_dir = Path(tmpdir) / "source"
+            source_dir.mkdir()
+            pptx_file = source_dir / "presentation.pptx"
+            pptx_file.write_text("pptx content")
+
+            original_mtime = pptx_file.stat().st_mtime
+
+            temp_dir = create_temp_export_dir()
+            try:
+                temp_pptx, _ = prepare_file_for_export(pptx_file, temp_dir)
+                temp_mtime = temp_pptx.stat().st_mtime
+
+                # shutil.copy2 should preserve timestamps
+                self.assertEqual(temp_mtime, original_mtime)
+            finally:
+                cleanup_temp_dir(temp_dir)
 
 
 class TestCmdPdf(unittest.TestCase):

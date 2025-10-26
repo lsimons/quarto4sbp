@@ -1,5 +1,7 @@
 """PDF command for q4s CLI."""
 
+import shutil
+import tempfile
 from pathlib import Path
 
 
@@ -48,6 +50,67 @@ def find_stale_pptx(directory: Path) -> list[Path]:
                 stale_files.append(pptx_path)
 
     return stale_files
+
+
+def create_temp_export_dir() -> Path:
+    """Create a temporary directory for PowerPoint export.
+
+    Returns:
+        Path to temporary directory
+
+    Raises:
+        OSError: If temporary directory creation fails
+    """
+    temp_dir = Path(tempfile.mkdtemp(prefix="q4s-pdf-"))
+    return temp_dir
+
+
+def prepare_file_for_export(pptx_path: Path, temp_dir: Path) -> tuple[Path, Path]:
+    """Copy PPTX file to temporary directory for export.
+
+    Args:
+        pptx_path: Path to original PPTX file
+        temp_dir: Temporary directory for export
+
+    Returns:
+        Tuple of (temp_pptx_path, temp_pdf_path) for export
+
+    Raises:
+        OSError: If file copy fails
+    """
+    temp_pptx = temp_dir / pptx_path.name
+    shutil.copy2(pptx_path, temp_pptx)
+
+    # Calculate where PDF will be created
+    temp_pdf = temp_pptx.with_suffix(".pdf")
+
+    return temp_pptx, temp_pdf
+
+
+def copy_pdf_to_destination(temp_pdf: Path, dest_pdf: Path) -> None:
+    """Copy exported PDF from temporary directory to destination.
+
+    Args:
+        temp_pdf: Path to PDF in temporary directory
+        dest_pdf: Destination path for PDF
+
+    Raises:
+        OSError: If file copy fails
+    """
+    shutil.copy2(temp_pdf, dest_pdf)
+
+
+def cleanup_temp_dir(temp_dir: Path) -> None:
+    """Remove temporary directory and all its contents.
+
+    Args:
+        temp_dir: Temporary directory to remove
+    """
+    try:
+        shutil.rmtree(temp_dir)
+    except OSError:
+        # Best effort cleanup - don't fail if cleanup fails
+        pass
 
 
 def cmd_pdf(args: list[str]) -> int:
