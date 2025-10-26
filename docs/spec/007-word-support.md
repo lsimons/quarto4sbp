@@ -2,13 +2,25 @@
 
 **Purpose:** Add comprehensive Microsoft Word (.docx) support parallel to PowerPoint (.pptx) support, including template creation, PDF export, and rendering workflow
 
+**Epic Tasks:**
+1. Rename `new` command to `new-pptx` and update spec-005 (q4s-38)
+2. Rename `pdf` command to `pdf-pptx` and update spec-006 (q4s-37)
+3. Implement `new-doc` command for Word documents
+4. Implement `pdf-doc` command for Word PDF export
+5. Create unified `pdf` command that calls both `pdf-pptx` and `pdf-doc` (q4s-36)
+6. Create Word templates (qmd, docx, render-doc.sh)
+7. Update documentation
+
 **Requirements:**
+- `q4s new-pptx <directory>` command to create new PowerPoint presentations (renamed from `new`)
 - `q4s new-doc <directory>` command to create new Word documents from template
+- `q4s pdf-pptx` command to export PPTX files to PDF (renamed from `pdf`)
 - `q4s pdf-doc` command to export DOCX files to PDF (when DOCX is newer than PDF)
+- `q4s pdf` unified command to export both PPTX and DOCX files to PDF
 - Word document template with proper Quarto frontmatter
 - Render script for Word documents
 - AppleScript-based PDF export via Microsoft Word application
-- Follow same patterns as PowerPoint support (spec-005, spec-006)
+- Follow same patterns as PowerPoint support (spec-005, spec-006)</parameter>
 
 **Design Approach:**
 - Mirror PowerPoint implementation patterns for consistency
@@ -192,10 +204,67 @@ Update help text to include:
 - Document render-doc.sh workflow
 - Note macOS + Microsoft Word requirement for PDF export
 
-**Parallel with PowerPoint:**
-- `new` → `new-doc` (create presentation → create document)
-- `pdf` → `pdf-doc` (export pptx → export docx)
-- `simple-presentation.*` → `simple-document.*` (template naming)
-- `render.sh` → `render-doc.sh` (render script naming)
+## Unified pdf Command
+
+**Purpose:** Provide a single command to export all Office documents (PPTX and DOCX) to PDF
+
+**API Design:**
+- `cmd_pdf(args: list[str]) -> int` - Handle unified pdf subcommand
+  - Takes optional directory argument (defaults to current directory)
+  - Returns 0 on success, 1 on error
+  - Internally calls both `pdf_pptx.cmd_pdf_pptx()` and `pdf_doc.cmd_pdf_doc()`
+
+**Behavior:**
+1. Call `cmd_pdf_pptx(args)` to export all PowerPoint files
+2. Call `cmd_pdf_doc(args)` to export all Word documents
+3. Aggregate results and print combined summary
+4. Return 0 if both succeed, 1 if either fails
+
+**Implementation Notes:**
+- Rename existing `pdf.py` to `pdf_pptx.py` (and update function names)
+- Create new `pdf.py` that imports and calls both format-specific commands
+- Wire up in CLI dispatcher to call unified command
+- Update help text to show all three commands:
+  - `pdf        Export all Office documents (PPTX and DOCX) to PDF`
+  - `pdf-pptx   Export PPTX files to PDF (when PPTX is newer)`
+  - `pdf-doc    Export DOCX files to PDF (when DOCX is newer)`
+
+## Refactoring Tasks
+
+**Task 1: Rename `new` to `new-pptx` (q4s-38)**
+- Rename `commands/new.py` to `commands/new_pptx.py`
+- Rename `cmd_new()` to `cmd_new_pptx()`
+- Update CLI dispatcher in `cli.py`
+- Update help text
+- Update spec-005
+- Update render.sh.template to call `q4s pdf-pptx`
+- Update tests in `tests/commands/test_new.py` → `test_new_pptx.py`
+- Update README.md examples
+
+**Task 2: Rename `pdf` to `pdf-pptx` (q4s-37)**
+- Rename `commands/pdf.py` to `commands/pdf_pptx.py`
+- Rename `cmd_pdf()` to `cmd_pdf_pptx()`
+- Rename `find_stale_pptx()` to keep same name (already format-specific)
+- Rename `export_pptx_to_pdf()` to keep same name (already format-specific)
+- Update CLI dispatcher in `cli.py`
+- Update help text
+- Update spec-006
+- Update render.sh.template to call `q4s pdf-pptx`
+- Update tests in `tests/commands/test_pdf.py` → `test_pdf_pptx.py`
+- Update integration tests similarly
+- Update README.md examples
+
+**Task 3: Create unified `pdf` command (q4s-36)**
+- Create new `commands/pdf.py` with `cmd_pdf()`
+- Import and call both `cmd_pdf_pptx()` and `cmd_pdf_doc()`
+- Wire up in CLI dispatcher
+- Add tests in `tests/commands/test_pdf.py`
+- Update help text
+- Update README.md
+
+**Naming Convention Summary:**
+- **PowerPoint:** `new-pptx`, `pdf-pptx`, `simple-presentation.*`, `render.sh`
+- **Word:** `new-doc`, `pdf-doc`, `simple-document.*`, `render-doc.sh`
+- **Unified:** `pdf` (calls both `pdf-pptx` and `pdf-doc`)
 
 **Status:** Not yet implemented
