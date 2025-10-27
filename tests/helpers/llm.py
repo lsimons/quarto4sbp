@@ -90,3 +90,70 @@ def create_mock_with_responses(responses: dict[str, str]) -> Any:
     from tests.mocks.llm_client import MockLLMClient  # pyright: ignore[reportMissingImports,reportUnknownVariableType]
 
     return MockLLMClient(responses)  # pyright: ignore[reportUnknownVariableType]
+
+
+def assert_llm_called_with(mock: Any, pattern: str) -> None:
+    """Assert LLM was called with prompt matching pattern.
+
+    Args:
+        mock: MockLLMClient instance
+        pattern: Prompt pattern to search for (regex)
+
+    Raises:
+        AssertionError: If pattern not found in any call
+    """
+    if not mock.was_called_with(pattern):
+        prompts = [call["prompt"] for call in mock.call_history]
+        raise AssertionError(
+            f"Expected LLM to be called with pattern: {pattern}\n"
+            f"Actual prompts:\n" + "\n".join(f"  - {p[:100]}" for p in prompts)
+        )
+
+
+def assert_llm_not_called_with(mock: Any, pattern: str) -> None:
+    """Assert LLM was NOT called with prompt matching pattern.
+
+    Args:
+        mock: MockLLMClient instance
+        pattern: Prompt pattern to search for (regex)
+
+    Raises:
+        AssertionError: If pattern found in any call
+    """
+    if mock.was_called_with(pattern):
+        matches = mock.get_calls_matching(pattern)
+        prompts = [call["prompt"] for call in matches]
+        raise AssertionError(
+            f"Expected LLM NOT to be called with pattern: {pattern}\n"
+            f"But found matches:\n" + "\n".join(f"  - {p[:100]}" for p in prompts)
+        )
+
+
+def assert_llm_call_count(mock: Any, expected: int) -> None:
+    """Assert LLM was called exact number of times.
+
+    Args:
+        mock: MockLLMClient instance
+        expected: Expected number of calls
+
+    Raises:
+        AssertionError: If call count doesn't match
+    """
+    actual = mock.get_call_count()
+    if actual != expected:
+        raise AssertionError(
+            f"Expected {expected} LLM calls, but got {actual}\n"
+            f"Call history: {[call['prompt'][:50] for call in mock.call_history]}"
+        )
+
+
+def get_llm_call_prompts(mock: Any) -> list[str]:
+    """Get list of all prompts from LLM call history.
+
+    Args:
+        mock: MockLLMClient instance
+
+    Returns:
+        List of prompt strings
+    """
+    return [call["prompt"] for call in mock.call_history]
