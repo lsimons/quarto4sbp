@@ -44,6 +44,13 @@ This document captures key design decisions for the quarto4sbp project. For deta
 - **Acceptable diagnostics**: Some remaining warnings for argparse/unittest patterns that are inherently dynamic
 - **Pyright ignores**: Use specific error codes (`reportAny`, `reportImplicitOverride`) when needed
 
+## LLM Integration
+- **External LiteLLM service**: Use remote LiteLLM for provider independence, avoid bundling provider SDKs
+- **llm library**: Use Simon Willison's `llm` library for simple, lightweight API access
+- **Configuration**: TOML config files (`~/.config/q4s.toml` or `q4s.toml`) with environment variable overrides
+- **Prompts as code**: Store prompts as `.txt` files in `prompts/` directory, organized by feature
+- **Optional dependency**: LLM features are opt-in, core functionality remains dependency-free
+
 ## Development Process
 - **Spec-driven development**: New features documented in `docs/spec/` before implementation
 - **Concise specs**: Focus on design decisions, reference `000-shared-patterns.md`, avoid implementation details
