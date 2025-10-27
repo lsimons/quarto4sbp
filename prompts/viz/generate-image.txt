@@ -1,0 +1,24 @@
+Generate a professional business presentation image based on the following description.
+
+# Image Description
+{image_description}
+
+# Slide Context
+{slide_content}
+
+# Style Guidelines
+- Professional and corporate aesthetic
+- Clean, modern design
+- Suitable for business presentations
+- High contrast for visibility in presentations
+- Avoid overly complex or cluttered compositions
+- Use appropriate color palette for corporate settings
+
+# Technical Requirements
+- Image should be clear and easy to understand at a glance
+- Suitable for placement in a presentation slide
+- Should complement text content, not replace it
+- Must be appropriate for professional business audience
+
+# Output
+Generate an image that matches the description while adhering to the style guidelines. The image should enhance the slide's message and maintain a professional appearance suitable for corporate presentations.

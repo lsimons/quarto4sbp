@@ -1,0 +1,29 @@
+Analyze the following slide content and determine if it would benefit from visual enhancement with an image.
+
+# Slide Content
+{slide_content}
+
+# Analysis Criteria
+A slide is a good candidate for visualization if it:
+- Contains only text bullets without any existing images
+- Describes a concept that can be visually represented
+- Would be more engaging with a supporting image
+- Has content that can be illustrated (processes, comparisons, metaphors, etc.)
+
+# Instructions
+1. Analyze whether this slide would benefit from an image
+2. If yes, describe what type of image would best support the content
+3. Suggest where the image should be placed (left/right column in 2-column layout)
+4. Provide a brief description for image generation
+
+# Output Format
+Respond with a JSON object:
+{{
+  "needs_image": true/false,
+  "image_type": "photograph|illustration|diagram|icon|chart",
+  "image_description": "detailed description for image generation",
+  "image_position": "left|right",
+  "reasoning": "brief explanation of why this image would help"
+}}
+
+If needs_image is false, only include needs_image and reasoning fields.

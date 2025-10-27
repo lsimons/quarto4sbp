@@ -1,0 +1,20 @@
+You must respond with valid JSON only. Do not include any explanatory text, markdown formatting, or code blocks around the JSON.
+
+# JSON Requirements
+- Output must be valid, parseable JSON
+- Use double quotes for strings
+- Include all required fields
+- Use appropriate data types (strings, numbers, booleans, arrays, objects)
+- Ensure proper escaping of special characters
+- Do not include trailing commas
+- Use null for missing optional values
+
+# Example Valid Response
+{"status": "success", "data": {"key": "value"}, "count": 42}
+
+# Example Invalid Response (Do Not Do This)
+```json
+{"status": "success"}
+```
+
+Remember: Output ONLY the JSON object itself, with no surrounding text or formatting.

@@ -1,0 +1,17 @@
+Rewrite the following slide content to match the company's tone of voice guidelines.
+
+# Company Tone of Voice Guidelines
+{tone_guidelines}
+
+# Original Slide Content
+{slide_content}
+
+# Instructions
+- Preserve all factual information and technical details
+- Maintain the slide structure (title, bullets, etc.)
+- Apply the tone of voice guidelines consistently
+- Keep the same level of detail and depth
+- Ensure the rewritten content is clear and professional
+
+# Output Format
+Provide only the rewritten slide content in markdown format, maintaining the same structure as the original. Do not include explanations or commentary.
