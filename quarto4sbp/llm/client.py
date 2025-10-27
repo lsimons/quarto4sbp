@@ -10,6 +10,14 @@ from typing import Any, Optional
 
 from quarto4sbp.llm.config import LLMConfig, load_config
 
+import importlib
+from llm.plugins import pm
+
+# Register our custom LLM plugin
+plugin = "quarto4sbp.llm.plugin"
+mod = importlib.import_module(plugin)
+pm.register(mod, plugin)
+
 
 class LLMClient:
     """Wrapper around llm library for LLM interactions.
@@ -67,7 +75,7 @@ class LLMClient:
         if self.config.api_key:
             llm_model.key = self.config.api_key
         if self.config.base_url:
-            llm_model.api_base = self.config.base_url
+            setattr(llm_model, "api_base", self.config.base_url)
 
         # Build the full prompt with system message if provided
         full_prompt = prompt_text
@@ -83,7 +91,8 @@ class LLMClient:
                     full_prompt,
                     temperature=temperature,
                     max_tokens=max_tokens,
-                    timeout=self.config.timeout,
+                    # not supported for reasoning models:
+                    # timeout=self.config.timeout,
                 )
 
                 # Extract text from response
