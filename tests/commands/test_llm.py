@@ -5,7 +5,6 @@ from io import StringIO
 from unittest.mock import MagicMock, patch
 
 from quarto4sbp.commands.llm import cmd_llm
-from quarto4sbp.llm.client import LLMNotAvailableError
 from quarto4sbp.llm.config import LLMConfig
 
 
@@ -45,24 +44,6 @@ class TestCmdLlm(unittest.TestCase):
         output = stderr.getvalue()
         self.assertIn("Configuration error", output)
         self.assertIn("Missing API key", output)
-
-    @patch("quarto4sbp.commands.llm.LLMClient")
-    @patch("quarto4sbp.commands.llm.load_config")
-    def test_llm_not_available(
-        self, mock_load_config: MagicMock, mock_client_class: MagicMock
-    ) -> None:
-        """Test handling when LLM library is not installed."""
-        mock_config = LLMConfig(model="test-model", api_key="test-key")
-        mock_load_config.return_value = mock_config
-        mock_client_class.side_effect = LLMNotAvailableError("llm not installed")
-
-        stderr = StringIO()
-        with patch("sys.stderr", stderr):
-            result = cmd_llm(["test"])
-
-        self.assertEqual(result, 1)
-        output = stderr.getvalue()
-        self.assertIn("llm not installed", output)
 
     @patch("quarto4sbp.commands.llm.LLMClient")
     @patch("quarto4sbp.commands.llm.load_config")

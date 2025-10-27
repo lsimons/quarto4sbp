@@ -1,19 +1,14 @@
 """LLM client wrapper for AI-powered features.
 
 This module provides a thin wrapper around the llm library for LLM interactions.
-The llm library must be installed separately (not a core dependency).
 """
 
 import time
+
+import llm
 from typing import Any, Optional
 
 from quarto4sbp.llm.config import LLMConfig, load_config
-
-
-class LLMNotAvailableError(Exception):
-    """Raised when llm library is not installed."""
-
-    pass
 
 
 class LLMClient:
@@ -34,28 +29,8 @@ class LLMClient:
         Args:
             config: Optional LLMConfig instance. If not provided, loads from
                    configuration files and environment.
-
-        Raises:
-            LLMNotAvailableError: If llm library is not installed
         """
         self.config = config or load_config()
-        self._check_llm_available()
-
-    def _check_llm_available(self) -> None:
-        """Check if llm library is available.
-
-        Raises:
-            LLMNotAvailableError: If llm library is not installed
-        """
-        try:
-            import llm  # pyright: ignore[reportMissingImports]
-
-            _ = llm  # Suppress unused import warning
-        except ImportError:
-            raise LLMNotAvailableError(
-                "LLM library not installed. Install with: pip install llm\n"
-                "Note: LLM features are optional. Core functionality works without it."
-            )
 
     def prompt(
         self,
@@ -78,11 +53,8 @@ class LLMClient:
             The LLM response text
 
         Raises:
-            LLMNotAvailableError: If llm library is not installed
             ValueError: If API call fails after retries
         """
-        import llm  # pyright: ignore[reportMissingImports]
-
         # Use config defaults if not overridden
         model = model or self.config.model
         temperature = (
@@ -91,9 +63,9 @@ class LLMClient:
         max_tokens = max_tokens or self.config.max_tokens
 
         # Set up model with API key
-        llm_model = llm.get_model(model)  # pyright: ignore[reportUnknownVariableType,reportAttributeAccessIssue,reportUnknownMemberType]
+        llm_model = llm.get_model(model)
         if self.config.api_key:
-            llm_model.key = self.config.api_key  # pyright: ignore[reportAttributeAccessIssue]
+            llm_model.key = self.config.api_key
 
         # Build the full prompt with system message if provided
         full_prompt = prompt_text
@@ -105,7 +77,7 @@ class LLMClient:
         for attempt in range(self.config.max_attempts):
             try:
                 # Make the API call
-                response = llm_model.prompt(  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType,reportUnknownMemberType]
+                response = llm_model.prompt(  # pyright: ignore[reportUnknownMemberType]
                     full_prompt,
                     temperature=temperature,
                     max_tokens=max_tokens,
@@ -113,7 +85,7 @@ class LLMClient:
                 )
 
                 # Extract text from response
-                return str(response.text())  # pyright: ignore[reportAttributeAccessIssue,reportUnknownMemberType,reportUnknownArgumentType]
+                return str(response.text())
 
             except Exception as e:
                 last_error = e
@@ -139,9 +111,6 @@ class LLMClient:
                 - error: error message (if failed)
                 - elapsed_time: time taken in seconds
                 - model: model name used
-
-        Raises:
-            LLMNotAvailableError: If llm library is not installed
         """
         test_prompt = "Respond with exactly: 'Hello from LLM'"
         start_time = time.time()
@@ -178,8 +147,5 @@ def create_client(config: Optional[LLMConfig] = None) -> LLMClient:
 
     Returns:
         Configured LLMClient instance
-
-    Raises:
-        LLMNotAvailableError: If llm library is not installed
     """
     return LLMClient(config)

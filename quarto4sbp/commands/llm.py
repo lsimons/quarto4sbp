@@ -9,7 +9,7 @@ This command tests the LLM integration by:
 
 import sys
 
-from quarto4sbp.llm.client import LLMClient, LLMNotAvailableError
+from quarto4sbp.llm.client import LLMClient
 from quarto4sbp.llm.config import load_config
 
 
@@ -55,9 +55,6 @@ def cmd_llm(args: list[str]) -> int:
         client = LLMClient(config)
         print("✓ LLM client initialized")
         print("")
-    except LLMNotAvailableError as e:
-        print(f"✗ {e}", file=sys.stderr)
-        return 1
     except Exception as e:
         print(f"✗ Failed to initialize client: {e}", file=sys.stderr)
         return 1
