@@ -8,6 +8,7 @@ from quarto4sbp.commands.new_pptx import cmd_new_pptx
 from quarto4sbp.commands.pdf import cmd_pdf
 from quarto4sbp.commands.pdf_docx import cmd_pdf_docx
 from quarto4sbp.commands.pdf_pptx import cmd_pdf_pptx
+from quarto4sbp.commands.tov import cmd_tov
 
 __all__ = [
     "cmd_help",
@@ -18,4 +19,5 @@ __all__ = [
     "cmd_pdf",
     "cmd_pdf_docx",
     "cmd_pdf_pptx",
+    "cmd_tov",
 ]

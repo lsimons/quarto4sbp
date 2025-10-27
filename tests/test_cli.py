@@ -5,8 +5,10 @@ import sys
 import unittest
 from io import StringIO
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from quarto4sbp.cli import main
+from tests.mocks.llm_client import MockLLMClient
 
 
 class TestMain(unittest.TestCase):
@@ -161,6 +163,43 @@ class TestMain(unittest.TestCase):
             self.assertIn("Usage: q4s llm test", stderr)
         finally:
             sys.stderr = old_stderr
+
+    @patch("quarto4sbp.commands.tov.LLMClient")
+    def test_tov_command_with_flags(self, mock_llm_class) -> None:  # type: ignore
+        """Test tov command integration with flags."""
+        import tempfile
+        from pathlib import Path
+
+        # Set up mock
+        mock_client = MockLLMClient()
+        mock_client.add_response(r".*", "# Rewritten\n\nRewritten content.\n")
+        mock_llm_class.return_value = mock_client
+
+        # Create a temporary QMD file
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "test.qmd"
+            test_file.write_text("""---
+title: "Test"
+---
+
+# Introduction
+
+This is test content.
+""")
+
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+
+            try:
+                # Test with --dry-run flag
+                result = main(["tov", "--dry-run", str(test_file)])
+                output = sys.stdout.getvalue()
+
+                self.assertEqual(result, 0)
+                self.assertIn("Processing:", output)
+                self.assertIn("[DRY RUN]", output)
+            finally:
+                sys.stdout = old_stdout
 
 
 class TestCLIIntegration(unittest.TestCase):
