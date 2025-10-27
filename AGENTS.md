@@ -37,13 +37,6 @@ See [README.md](README.md) for usage examples and [DESIGN.md](DESIGN.md) for arc
 
 **IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
 
-### Why bd?
-
-- Dependency-aware: Track blockers and relationships between issues
-- Git-friendly: Auto-syncs to JSONL for version control
-- Agent-optimized: JSON output, ready work detection, discovered-from links
-- Prevents duplicate tracking systems and confusion
-
 ### Quick Start
 
 **Check for ready work:**
@@ -84,26 +77,118 @@ bd close bd-42 --reason "Completed" --json
 - `3` - Low (polish, optimization)
 - `4` - Backlog (future ideas)
 
-### Workflow for AI Agents
+### Development Workflow
 
-**ALWAYS FOLLOW THIS WORKFLOW:**
+**ALWAYS FOLLOW THIS WORKFLOW FOR ALL TASKS:**
 
-1. **Create issue FIRST**: `bd create "Task description" -t feature|bug|task|epic -p 0-4 --json`
-2. **Create feature branch**: `git checkout -b feat/descriptive-name` (or `fix/`, `refactor/`, etc.)
-3. **Claim your task**: `bd update <id> --status in_progress --json`
-4. **Work on it**: Implement, test, document
-5. **Discover new work?** Create linked issue:
-   - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id> --json`
-6. **Run tests**: `uv run pytest -v` (all tests must pass)
-7. **Run type checking**: `uv run pyright` (must have 0 errors, 0 warnings)
-8. **Run tests with coverage**: `uv run pytest --cov=quarto4sbp --cov-report=term --cov-fail-under=80` (coverage must be ≥80%)
-9. **Commit everything**: `git add -A && git commit -m "..."` (includes `.beads/issues.jsonl`)
-10. **For epics, create PR**:
-   - Push: `git push -u origin branch-name`
-   - Create PR: `gh pr create --title "..." --body "..."`
-   - Wait for CI: `gh pr checks --watch`
-   - Fix any CI failures and push fixes
-11. **Close the issue**: `bd close <id> --reason "Description of what was done" --json`
+#### 1. Setup
+- **Create issue FIRST**: `bd create "Task description" -t feature|bug|task|epic|chore -p 0-4 --json`
+- **Create branch**: `git checkout -b <type>/descriptive-name`
+  - Branch types: `feat/`, `fix/`, `refactor/`, `test/`, `docs/`, `chore/`
+- **Claim task**: `bd update <id> --status in_progress --json`
+
+#### 2. Implementation
+- **Work on it**: Implement, test, document
+- **For refactoring**:
+  - Create new directories/packages with `__init__.py` files
+  - Split modules: Move functions/classes to separate files
+  - Update imports: Ensure all imports point to new locations
+  - Mirror test structure: Create matching test directories/files
+  - Split tests: Move test classes to match new module structure
+  - Run tests frequently to verify nothing breaks
+- **Discover new work?** Create linked issue:
+  - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id> --json`
+
+#### 3. Verification
+- **Run tests**: `uv run pytest -v` (all tests must pass)
+- **Run type checking**: `uv run pyright` (must have 0 errors, 0 warnings)
+- **Run coverage**: `uv run pytest --cov=quarto4sbp --cov-report=term --cov-fail-under=80` (coverage must be ≥80%)
+
+#### 4. Commit
+- **For simple tasks/fixes**:
+  ```bash
+  git add -A
+  git commit -m "<type>: issue-id - Brief description
+  
+  - Detailed change 1
+  - Detailed change 2
+  - All N tests passing"
+  bd close <id> --reason "Completed. All tests passing (N/N)." --json
+  ```
+
+- **For refactoring**:
+  ```bash
+  git add -A
+  git commit -m "refactor: issue-id - Brief description
+  
+  - Created package/subpackage/ structure
+  - Moved function1() to package/subpackage/module1.py
+  - Updated imports in main module
+  - Split tests into matching structure
+  - All N tests passing"
+  ```
+
+- **For epics/features** (continue to step 5 before closing)
+
+#### 5. Pull Request (for epics, features, and refactoring)
+- **Update spec status** (if applicable): Set to "Implemented" in spec file
+- **Commit spec changes**: `git add -A && git commit -m "docs: Update spec-xxx status to Implemented"`
+- **Push branch**: `git push -u origin <type>/descriptive-name`
+- **Create PR**:
+  ```bash
+  gh pr create --title "<type>: issue-id - Brief description (spec-xxx)" \
+    --body "## Summary
+  
+  Description of changes
+  
+  ## Changes
+  - ✅ List of changes
+  
+  ## Testing
+  All X tests passing
+  
+  ## Related
+  - Issue: issue-id
+  - Spec: spec-xxx (if applicable)"
+  ```
+- **Wait for CI**: `gh pr checks --watch`
+- **Fix any CI failures**:
+  - If tests fail: fix and commit
+  - If pyright fails: remove unused imports, add type hints, commit
+  - Push fixes: `git push`
+  - Wait for checks again: `gh pr checks --watch`
+- **Close the issue** once all checks pass:
+  ```bash
+  bd close issue-id --reason "Completed. All tests passing (X/X). PR #N ready for review." --json
+  ```
+- **Wait for PR review and merge** (human reviews and merges)
+
+#### 6. After Merge
+```bash
+git checkout main
+git pull
+```
+
+### Workflow Notes
+
+**Task-Specific Guidance:**
+- **Bugs/Small fixes**: Steps 1-4 (commit and close directly)
+- **Refactoring**: Steps 1-6 (always use PR for structural changes)
+- **Features**: Steps 1-6 (always use PR, update spec if applicable)
+- **Epics**: Steps 1-6 (always use PR, update spec status, include test counts)
+
+**Best Practices:**
+- ✅ Keep work focused (one logical change at a time)
+- ✅ Ensure tests mirror code structure (easier to find and maintain)
+- ✅ Run tests after each significant change
+- ✅ Commit atomically (one logical change per commit)
+- ✅ Always wait for CI checks to pass before closing issues
+- ✅ Fix CI failures immediately with clear commit messages
+- ✅ Include test count and PR number in close reason for PRs
+- ❌ Don't mix refactoring with feature additions or bug fixes
+- ❌ Don't skip running tests until the end
+- ❌ Don't close issues until all checks are green (for PRs)
+- ❌ Don't merge PRs yourself (human review required)
 
 ### Auto-Sync
 
@@ -111,26 +196,6 @@ bd automatically syncs with git:
 - Exports to `.beads/issues.jsonl` after changes (5s debounce)
 - Imports from JSONL when newer (e.g., after `git pull`)
 - No manual export/import needed!
-
-### MCP Server (Recommended)
-
-If using Claude or MCP-compatible clients, install the beads MCP server:
-
-```bash
-pip install beads-mcp
-```
-
-Add to MCP config (e.g., `~/.config/claude/config.json`):
-```json
-{
-  "beads": {
-    "command": "beads-mcp",
-    "args": []
-  }
-}
-```
-
-Then use `mcp__beads__*` functions instead of CLI commands.
 
 ### Important Rules
 
@@ -144,8 +209,6 @@ Then use `mcp__beads__*` functions instead of CLI commands.
 - ❌ Do NOT use external issue trackers
 - ❌ Do NOT duplicate tracking systems
 - ❌ Do NOT start work without creating a bd issue first
-
-For more details, see README.md.
 
 ## Building and Running
 
@@ -186,88 +249,7 @@ uv run pyright
 
 See [README.md](README.md) for detailed installation and usage instructions.
 
-## Refactoring Workflow
 
-When refactoring code (splitting modules, reorganizing structure, etc.), follow this workflow:
-
-### 1. Plan the Refactoring
-- Identify what needs to be split/reorganized
-- Determine the target structure (e.g., `package/commands/` for command modules)
-- Ensure tests will mirror the code structure
-
-### 2. Create Feature Branch
-```bash
-git checkout -b refactor/descriptive-name
-```
-
-### 3. File bd Issue FIRST
-```bash
-bd create "Refactor: Brief description of what's being refactored" \
-  --description "Detailed description including what files are being split/moved" \
-  -t task -p 2 --json
-```
-
-### 4. Perform the Refactoring
-- **Create new directories/packages** with `__init__.py` files
-- **Split modules**: Move functions/classes to separate files
-- **Update imports**: Ensure all imports point to new locations
-- **Mirror test structure**: Create matching test directories/files
-- **Split tests**: Move test classes to match new module structure
-- **Run tests frequently**: Verify nothing breaks during refactoring
-
-Example pattern for splitting commands:
-- Code: `package/commands/feature.py` (contains `cmd_feature()`)
-- Test: `tests/commands/test_feature.py` (contains `TestCmdFeature`)
-- Package exports: `package/commands/__init__.py` imports and exports all commands
-
-### 5. Verify Everything Works
-```bash
-python -m pytest tests/ -v  # All tests pass
-# Run any integration tests
-# Check diagnostics if applicable
-```
-
-### 6. Commit the Work
-```bash
-git add -A
-git commit -m "refactor: Split X into separate modules (issue-id)
-
-- Created package/subpackage/ structure
-- Moved function1() to package/subpackage/module1.py
-- Moved function2() to package/subpackage/module2.py
-- Updated imports in main module
-- Split tests into tests/subpackage/test_module1.py and test_module2.py
-- Refactored tests/test_main.py to focus on integration
-- All N tests passing"
-```
-
-### 7. Close bd Issue
-```bash
-bd close issue-id --reason "Completed refactoring, all tests passing"
-```
-
-### 8. Push and Create PR
-```bash
-git push origin refactor/descriptive-name
-gh pr create --title "Refactor: Brief description (issue-id)" \
-  --body "Summary of changes, testing status, benefits"
-```
-
-### 9. After Merge
-```bash
-git checkout main
-git pull
-```
-
-### Refactoring Best Practices
-- ✅ Keep the refactoring focused (one structural change at a time)
-- ✅ Ensure tests mirror code structure (easier to find and maintain)
-- ✅ Run tests after each significant change
-- ✅ Commit atomically (one logical refactoring per commit)
-- ✅ Document benefits in PR (organization, maintainability, extensibility)
-- ❌ Don't mix refactoring with feature additions or bug fixes
-- ❌ Don't skip running tests until the end
-- ❌ Don't forget to update imports everywhere
 
 ## Development Conventions
 
@@ -342,49 +324,7 @@ For diagnostic warnings, use specific Pyright ignore comments with error codes:
 - Always remove unused imports to avoid `reportUnusedImport` errors
 
 
-### Epic Completion Workflow
 
-When completing an epic (large feature), follow this extended workflow:
-
-1. **Implement the feature** following the standard workflow above
-2. **Update spec status** to "Implemented" in the spec file
-3. **Commit all changes** including spec status update
-4. **Push the branch**: `git push -u origin feat/branch-name`
-5. **Create Pull Request**:
-   ```bash
-   gh pr create --title "feat: issue-id - Brief description (spec-xxx)" \
-     --body "## Summary
-
-   Description of changes
-
-   ## Changes
-   - ✅ List of changes
-
-   ## Testing
-   All X tests passing
-
-   ## Related
-   - Epic: issue-id
-   - Spec: spec-xxx"
-   ```
-6. **Wait for CI checks**: `gh pr checks --watch`
-7. **Fix any CI failures**:
-   - If tests fail: fix and commit
-   - If pyright fails: remove unused imports, add type hints, commit
-   - Push fixes: `git push`
-   - Wait for checks again: `gh pr checks --watch`
-8. **Close the epic** once all checks pass:
-   ```bash
-   bd close issue-id --reason "Completed. All tests passing (X/X). PR #N ready for review." --json
-   ```
-9. **Wait for PR review and merge** (human reviews and merges)
-
-**Important Notes:**
-- ✅ Always wait for CI checks to pass before considering work complete
-- ✅ Fix CI failures immediately with clear commit messages
-- ✅ Don't close the epic until all checks are green
-- ✅ Include test count and PR number in close reason
-- ❌ Don't merge PRs yourself (human review required)
 
 ## If Unsure
 
