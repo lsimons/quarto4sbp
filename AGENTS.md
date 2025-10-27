@@ -89,6 +89,10 @@ bd close bd-42 --reason "Completed" --json
 
 #### 2. Implementation
 - **Work on it**: Implement, test, document
+- **For features/epics**:
+  - there should usually be bd issues to make specs
+  - even if the issue doesn't say so, big features and epics need a spec
+  - after writing a spec, wait for human review before continuing
 - **For refactoring**:
   - Create new directories/packages with `__init__.py` files
   - Split modules: Move functions/classes to separate files
@@ -109,7 +113,7 @@ bd close bd-42 --reason "Completed" --json
   ```bash
   git add -A
   git commit -m "<type>: issue-id - Brief description
-  
+
   - Detailed change 1
   - Detailed change 2
   - All N tests passing"
@@ -120,7 +124,7 @@ bd close bd-42 --reason "Completed" --json
   ```bash
   git add -A
   git commit -m "refactor: issue-id - Brief description
-  
+
   - Created package/subpackage/ structure
   - Moved function1() to package/subpackage/module1.py
   - Updated imports in main module
@@ -138,25 +142,25 @@ bd close bd-42 --reason "Completed" --json
   ```bash
   gh pr create --title "<type>: issue-id - Brief description (spec-xxx)" \
     --body "## Summary
-  
+
   Description of changes
-  
+
   ## Changes
   - ✅ List of changes
-  
+
   ## Testing
   All X tests passing
-  
+
   ## Related
   - Issue: issue-id
   - Spec: spec-xxx (if applicable)"
   ```
-- **Wait for CI**: `gh pr checks --watch`
+- **Wait for CI**: `sleep 5 && gh pr checks --watch`
 - **Fix any CI failures**:
   - If tests fail: fix and commit
   - If pyright fails: remove unused imports, add type hints, commit
   - Push fixes: `git push`
-  - Wait for checks again: `gh pr checks --watch`
+  - Wait for checks again: `sleep 5 && gh pr checks --watch`
 - **Close the issue** once all checks pass:
   ```bash
   bd close issue-id --reason "Completed. All tests passing (X/X). PR #N ready for review." --json
@@ -322,8 +326,6 @@ For diagnostic warnings, use specific Pyright ignore comments with error codes:
 - `# pyright: ignore[reportImplicitOverride]` for unittest method override warnings
 - Use `_ = function_call()` assignment for unused return value warnings
 - Always remove unused imports to avoid `reportUnusedImport` errors
-
-
 
 
 ## If Unsure
