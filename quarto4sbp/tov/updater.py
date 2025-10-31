@@ -13,7 +13,7 @@ def create_backup(file_path: Path, backup_suffix: str = ".bak") -> Path:
     """Create a backup of the file.
 
     Args:
-        file_path: Path to the file to backup
+        file_path: Path to the file to back up
         backup_suffix: Suffix for backup file (default: .bak)
 
     Returns:
@@ -55,7 +55,7 @@ def update_file(
 
     Returns:
         UpdateResult with update information:
-            - backup_path: Path to backup file (if created, else None)
+            - backup_path: Path to back up file (if created, else None)
             - original_size: Original file size in bytes
             - new_size: New file size in bytes
             - lines_changed: Estimated number of lines changed
@@ -88,7 +88,7 @@ def update_file(
     try:
         file_path.write_text(new_content)
     except Exception as e:
-        # If write failed and we created a backup, restore it
+        # If write failed, and we created a backup, restore it
         if backup_path and backup_path.exists():
             shutil.copy2(backup_path, file_path)
         raise IOError(f"Failed to write file: {e}") from e

@@ -20,10 +20,7 @@ from typing import Any, Optional
 # Module-level cache for configuration
 _config_cache: Optional[dict[str, Any]] = None
 
-try:
-    import tomllib  # Python 3.11+
-except ImportError:
-    import tomli as tomllib  # type: ignore[no-redef]
+import tomllib  # Python 3.11+
 
 
 def expand_env_vars(value: str) -> str:
