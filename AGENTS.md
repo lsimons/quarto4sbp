@@ -2,8 +2,6 @@
 
 This document provides instructions for AI code-generation agents.
 
-Always follow the "Workflow for AI Agents" in the Issue Tracking section below. Create a bd issue BEFORE starting any work.
-
 ## Response Style
 
 - Be concise in responses - avoid over-explaining changes.
@@ -33,66 +31,17 @@ Python tool for working with [quarto](https://quarto.org/) in [Schuberg Philis](
 
 See [README.md](README.md) for usage examples and [DESIGN.md](DESIGN.md) for architectural decisions.
 
-## Issue Tracking with bd (beads)
+## Development Workflow
 
-**IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
-
-### Quick Start
-
-**Check for ready work:**
-```bash
-bd ready --json
-```
-
-**Create new issues:**
-```bash
-bd create "Issue title" -t bug|feature|task -p 0-4 --json
-bd create "Issue title" -p 1 --deps discovered-from:bd-123 --json
-```
-
-**Claim and update:**
-```bash
-bd update bd-42 --status in_progress --json
-bd update bd-42 --priority 1 --json
-```
-
-**Complete work:**
-```bash
-bd close bd-42 --reason "Completed" --json
-```
-
-### Issue Types
-
-- `bug` - Something broken
-- `feature` - New functionality
-- `task` - Work item (tests, docs, refactoring)
-- `epic` - Large feature with subtasks
-- `chore` - Maintenance (dependencies, tooling)
-
-### Priorities
-
-- `0` - Critical (security, data loss, broken builds)
-- `1` - High (major features, important bugs)
-- `2` - Medium (default, nice-to-have)
-- `3` - Low (polish, optimization)
-- `4` - Backlog (future ideas)
-
-### Development Workflow
-
-**ALWAYS FOLLOW THIS WORKFLOW FOR ALL TASKS:**
-
-#### 1. Setup
-- **Create issue FIRST**: `bd create "Task description" -t feature|bug|task|epic|chore -p 0-4 --json`
+### 1. Setup
 - **Create branch**: `git checkout -b <type>/descriptive-name`
   - Branch types: `feat/`, `fix/`, `refactor/`, `test/`, `docs/`, `chore/`
-- **Claim task**: `bd update <id> --status in_progress --json`
 
-#### 2. Implementation
+### 2. Implementation
 - **Work on it**: Implement, test, document
 - **For features/epics**:
-  - there should usually be bd issues to make specs
-  - even if the issue doesn't say so, big features and epics need a spec
-  - after writing a spec, wait for human review before continuing
+  - Big features and epics need a spec
+  - After writing a spec, wait for human review before continuing
 - **For refactoring**:
   - Create new directories/packages with `__init__.py` files
   - Split modules: Move functions/classes to separate files
@@ -100,30 +49,27 @@ bd close bd-42 --reason "Completed" --json
   - Mirror test structure: Create matching test directories/files
   - Split tests: Move test classes to match new module structure
   - Run tests frequently to verify nothing breaks
-- **Discover new work?** Create linked issue:
-  - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id> --json`
 
-#### 3. Verification
+### 3. Verification
 - **Run tests**: `uv run pytest -v` (all tests must pass)
 - **Run type checking**: `uv run pyright` (must have 0 errors, 0 warnings)
 - **Run coverage**: `uv run pytest --cov=quarto4sbp --cov-report=term --cov-fail-under=80` (coverage must be ≥80%)
 
-#### 4. Commit
+### 4. Commit
 - **For simple tasks/fixes**:
   ```bash
   git add -A
-  git commit -m "<type>: issue-id - Brief description
+  git commit -m "<type>: Brief description
 
   - Detailed change 1
   - Detailed change 2
   - All N tests passing"
-  bd close <id> --reason "Completed. All tests passing (N/N)." --json
   ```
 
 - **For refactoring**:
   ```bash
   git add -A
-  git commit -m "refactor: issue-id - Brief description
+  git commit -m "refactor: Brief description
 
   - Created package/subpackage/ structure
   - Moved function1() to package/subpackage/module1.py
@@ -132,15 +78,15 @@ bd close bd-42 --reason "Completed" --json
   - All N tests passing"
   ```
 
-- **For epics/features** (continue to step 5 before closing)
+- **For epics/features** (continue to step 5)
 
-#### 5. Pull Request (for epics, features, and refactoring)
+### 5. Pull Request (for epics, features, and refactoring)
 - **Update spec status** (if applicable): Set to "Implemented" in spec file
 - **Commit spec changes**: `git add -A && git commit -m "docs: Update spec-xxx status to Implemented"`
 - **Push branch**: `git push -u origin <type>/descriptive-name`
 - **Create PR**:
   ```bash
-  gh pr create --title "<type>: issue-id - Brief description (spec-xxx)" \
+  gh pr create --title "<type>: Brief description (spec-xxx)" \
     --body "## Summary
 
   Description of changes
@@ -152,7 +98,6 @@ bd close bd-42 --reason "Completed" --json
   All X tests passing
 
   ## Related
-  - Issue: issue-id
   - Spec: spec-xxx (if applicable)"
   ```
 - **Wait for CI**: `sleep 5 && gh pr checks --watch`
@@ -161,13 +106,9 @@ bd close bd-42 --reason "Completed" --json
   - If pyright fails: remove unused imports, add type hints, commit
   - Push fixes: `git push`
   - Wait for checks again: `sleep 5 && gh pr checks --watch`
-- **Close the issue** once all checks pass:
-  ```bash
-  bd close issue-id --reason "Completed. All tests passing (X/X). PR #N ready for review." --json
-  ```
 - **Wait for PR review and merge** (human reviews and merges)
 
-#### 6. After Merge
+### 6. After Merge
 ```bash
 git checkout main
 git pull
@@ -176,7 +117,7 @@ git pull
 ### Workflow Notes
 
 **Task-Specific Guidance:**
-- **Bugs/Small fixes**: Steps 1-4 (commit and close directly)
+- **Bugs/Small fixes**: Steps 1-4 (commit directly)
 - **Refactoring**: Steps 1-6 (always use PR for structural changes)
 - **Features**: Steps 1-6 (always use PR, update spec if applicable)
 - **Epics**: Steps 1-6 (always use PR, update spec status, include test counts)
@@ -186,33 +127,11 @@ git pull
 - ✅ Ensure tests mirror code structure (easier to find and maintain)
 - ✅ Run tests after each significant change
 - ✅ Commit atomically (one logical change per commit)
-- ✅ Always wait for CI checks to pass before closing issues
+- ✅ Always wait for CI checks to pass
 - ✅ Fix CI failures immediately with clear commit messages
-- ✅ Include test count and PR number in close reason for PRs
 - ❌ Don't mix refactoring with feature additions or bug fixes
 - ❌ Don't skip running tests until the end
-- ❌ Don't close issues until all checks are green (for PRs)
 - ❌ Don't merge PRs yourself (human review required)
-
-### Auto-Sync
-
-bd automatically syncs with git:
-- Exports to `.beads/issues.jsonl` after changes (5s debounce)
-- Imports from JSONL when newer (e.g., after `git pull`)
-- No manual export/import needed!
-
-### Important Rules
-
-- ✅ Use bd for ALL task tracking
-- ✅ Always use `--json` flag for programmatic use
-- ✅ **Create bd issue BEFORE starting work** (not after)
-- ✅ **Update bd status BEFORE committing** (not after)
-- ✅ Link discovered work with `discovered-from` dependencies
-- ✅ Check `bd ready` before asking "what should I work on?"
-- ❌ Do NOT create markdown TODO lists
-- ❌ Do NOT use external issue trackers
-- ❌ Do NOT duplicate tracking systems
-- ❌ Do NOT start work without creating a bd issue first
 
 ## Building and Running
 
@@ -265,9 +184,7 @@ See [README.md](README.md) for detailed installation and usage instructions.
 
 ### Commits
 
-- Reference the relevant spec number in commit messages (e.g., `feat(actions): q4s-12 - implement organize-desktop action (spec-004)`).
-
-- Reference the relevant beads issue number in commit messages (e.g., `feat(actions): q4s-12 - implement organize-desktop action (spec-004)`).
+- Reference the relevant spec number in commit messages (e.g., `feat(actions): implement organize-desktop action (spec-004)`).
 
 - Follow Conventional Commits, with types:
   - build: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
@@ -283,7 +200,7 @@ See [README.md](README.md) for detailed installation and usage instructions.
   - improvement: Improves code in some other way (that is not a feat or fix)
   - chore: Changes that take care of some other kind of chore that doesn't impact the main code
 
-- Work with branches. Branches should be named based after the convention commit types, for example `feat/q4s-1-my-new-feature`, `fix/q4s-4-my-bugfix`, and `test/q4s-23-additional-tests-for-my-bugfix`.
+- Work with branches. Branches should be named based after the convention commit types, for example `feat/my-new-feature`, `fix/my-bugfix`, and `test/additional-tests-for-my-bugfix`.
 
 ### Specification Writing
 

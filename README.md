@@ -257,12 +257,6 @@ The default model is `azure/gpt-5-mini`, but you can use any model supported by 
 
 This project follows a spec-based development approach documented in [`docs/spec`](docs/spec).
 
-### Beads issue tracking
-
-This project uses [beads (bd)](https://github.com/steveyegge/beads) for issue tracking.
-
-To install try `brew tap steveyegge/beads && brew install bd` on Mac.
-
 ### Development Guidelines
 - See [CLAUDE.md](CLAUDE.md) for Claude Code-specific guidance
 - See [AGENTS.md](AGENTS.md) for development guidelines and agent instructions
