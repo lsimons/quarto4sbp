@@ -7,7 +7,6 @@ Supports template variables using Python's string formatting.
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
 
 
 class PromptNotFoundError(Exception):
@@ -28,7 +27,7 @@ class PromptLoader:
         formatted = loader.load_and_format("viz/analyze-slide", slide_content="...")
     """
 
-    def __init__(self, prompts_dir: Optional[Path] = None) -> None:
+    def __init__(self, prompts_dir: Path | None = None) -> None:
         """Initialize the prompt loader.
 
         Args:
@@ -42,7 +41,7 @@ class PromptLoader:
         else:
             self.prompts_dir = prompts_dir
 
-    @lru_cache(maxsize=32)
+    @lru_cache(maxsize=32)  # noqa: B019
     def load(self, prompt_name: str) -> str:
         """Load a prompt file by name.
 
@@ -96,7 +95,7 @@ class PromptLoader:
         template = self.load(prompt_name)
         return template.format(**kwargs)
 
-    def list_prompts(self, category: Optional[str] = None) -> list[str]:
+    def list_prompts(self, category: str | None = None) -> list[str]:
         """List available prompts, optionally filtered by category.
 
         Args:
@@ -140,7 +139,7 @@ class PromptLoader:
 
 
 # Global default loader instance
-_default_loader: Optional[PromptLoader] = None
+_default_loader: PromptLoader | None = None
 
 
 def get_loader() -> PromptLoader:

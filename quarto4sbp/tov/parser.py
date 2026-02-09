@@ -7,7 +7,6 @@ rewriting while preserving the original structure.
 
 import re
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -24,7 +23,7 @@ class QmdSection:
     content: str
     start_line: int
     end_line: int
-    level: Optional[int] = None
+    level: int | None = None
 
 
 @dataclass

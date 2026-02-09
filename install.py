@@ -25,7 +25,7 @@ def main() -> int:
 
     # Verify it's the right project
     try:
-        with open(pyproject_path, "r") as f:
+        with open(pyproject_path) as f:
             content = f.read()
             if 'name = "quarto4sbp"' not in content:
                 print(

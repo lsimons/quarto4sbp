@@ -6,7 +6,7 @@ while preserving file attributes and reporting changes.
 
 import shutil
 from pathlib import Path
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 
 def create_backup(file_path: Path, backup_suffix: str = ".bak") -> Path:
@@ -33,7 +33,7 @@ def create_backup(file_path: Path, backup_suffix: str = ".bak") -> Path:
 class UpdateResult(TypedDict):
     """Result from update_file operation."""
 
-    backup_path: Optional[Path]
+    backup_path: Path | None
     original_size: int
     new_size: int
     lines_changed: int
@@ -75,12 +75,14 @@ def update_file(
     # Estimate lines changed (simple diff count)
     original_lines = original_content.splitlines()
     new_lines = new_content.splitlines()
-    lines_changed = sum(1 for old, new in zip(original_lines, new_lines) if old != new)
+    lines_changed = sum(
+        1 for old, new in zip(original_lines, new_lines, strict=False) if old != new
+    )
     # Add lines added or removed
     lines_changed += abs(len(original_lines) - len(new_lines))
 
     # Create backup if requested
-    backup_path: Optional[Path] = None
+    backup_path: Path | None = None
     if create_backup_file:
         backup_path = create_backup(file_path, backup_suffix)
 
@@ -91,7 +93,7 @@ def update_file(
         # If write failed, and we created a backup, restore it
         if backup_path and backup_path.exists():
             shutil.copy2(backup_path, file_path)
-        raise IOError(f"Failed to write file: {e}") from e
+        raise OSError(f"Failed to write file: {e}") from e
 
     return UpdateResult(
         backup_path=backup_path,

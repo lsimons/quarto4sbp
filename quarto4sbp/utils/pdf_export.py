@@ -1,8 +1,8 @@
 """Utilities for exporting Office documents to PDF via AppleScript."""
 
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 
 def find_stale_files(directory: Path, extension: str) -> list[Path]:

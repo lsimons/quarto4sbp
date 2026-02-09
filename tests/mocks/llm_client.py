@@ -106,10 +106,7 @@ class MockLLMClient:
         Returns:
             True if any call matches pattern
         """
-        for call in self.call_history:
-            if re.search(pattern, call["prompt"], re.IGNORECASE):
-                return True
-        return False
+        return any(re.search(pattern, call["prompt"], re.IGNORECASE) for call in self.call_history)
 
     def get_calls_matching(self, pattern: str) -> list[dict[str, Any]]:
         """Get all calls matching a pattern.

@@ -4,8 +4,8 @@ This module handles the LLM-based rewriting of markdown content to match
 company tone of voice guidelines while preserving technical accuracy and structure.
 """
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Optional
 
 from quarto4sbp.llm.client import LLMClient
 from quarto4sbp.tov.parser import QmdSection
@@ -39,7 +39,7 @@ def load_prompt(prompt_name: str) -> str:
 def rewrite_section(
     section: QmdSection,
     client: LLMClient,
-    system_prompt: Optional[str] = None,
+    system_prompt: str | None = None,
 ) -> str:
     """Rewrite a single section using LLM.
 
@@ -81,9 +81,9 @@ def rewrite_section(
 
 def rewrite_content(
     sections: list[QmdSection],
-    client: Optional[LLMClient] = None,
-    system_prompt: Optional[str] = None,
-    progress_callback: Optional[Callable[[int, int], None]] = None,
+    client: LLMClient | None = None,
+    system_prompt: str | None = None,
+    progress_callback: Callable[[int, int], None] | None = None,
 ) -> list[str]:
     """Rewrite all sections using LLM.
 

@@ -3,7 +3,7 @@
 import unittest
 
 from quarto4sbp.tov.parser import QmdSection
-from quarto4sbp.tov.rewriter import load_prompt, rewrite_section, rewrite_content
+from quarto4sbp.tov.rewriter import load_prompt, rewrite_content, rewrite_section
 from tests.mocks.llm_client import MockLLMClient
 
 

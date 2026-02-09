@@ -1,13 +1,13 @@
 """Tests for tov command."""
 
+import shutil
+import tempfile
 import unittest
 from pathlib import Path
-import tempfile
-import shutil
+from unittest.mock import MagicMock, patch
 
 from quarto4sbp.commands.tov import cmd_tov
 from tests.mocks.llm_client import MockLLMClient
-from unittest.mock import patch, MagicMock
 
 
 class TestCmdTov(unittest.TestCase):

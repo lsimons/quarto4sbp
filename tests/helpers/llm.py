@@ -87,7 +87,9 @@ def create_mock_with_responses(responses: dict[str, str]) -> Any:
     Returns:
         MockLLMClient configured with responses
     """
-    from tests.mocks.llm_client import MockLLMClient  # pyright: ignore[reportMissingImports,reportUnknownVariableType]
+    from tests.mocks.llm_client import (
+        MockLLMClient,  # pyright: ignore[reportMissingImports,reportUnknownVariableType]
+    )
 
     return MockLLMClient(responses)  # pyright: ignore[reportUnknownVariableType]
 

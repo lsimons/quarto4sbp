@@ -5,10 +5,10 @@ adding TOML configuration file support on top of the base environment variable c
 """
 
 import time
-from typing import Any, Optional
+from typing import Any
 
-from lsimons_llm import LLMClient as BaseLLMClient
-from lsimons_llm.config import LLMConfig as BaseLLMConfig
+from lsimons_llm import LLMClient as BaseLLMClient  # pyright: ignore[reportMissingTypeStubs]
+from lsimons_llm.config import LLMConfig as BaseLLMConfig  # pyright: ignore[reportMissingTypeStubs]
 
 from quarto4sbp.llm.config import LLMConfig, load_config
 
@@ -25,7 +25,7 @@ class LLMClient:
         print(response)
     """
 
-    def __init__(self, config: Optional[LLMConfig] = None) -> None:
+    def __init__(self, config: LLMConfig | None = None) -> None:
         """Initialize LLM client.
 
         Args:
@@ -49,10 +49,10 @@ class LLMClient:
     def prompt(
         self,
         prompt_text: str,
-        system: Optional[str] = None,
-        model: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        system: str | None = None,
+        model: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> str:
         """Send a prompt to the LLM and get response.
 
@@ -131,7 +131,7 @@ class LLMClient:
         self.close()
 
 
-def create_client(config: Optional[LLMConfig] = None) -> LLMClient:
+def create_client(config: LLMConfig | None = None) -> LLMClient:
     """Create an LLM client instance.
 
     Convenience function for creating a client.

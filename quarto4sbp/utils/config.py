@@ -14,13 +14,12 @@ cache=False or clear_config_cache() to reload.
 
 import os
 import re
+import tomllib
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 # Module-level cache for configuration
-_config_cache: Optional[dict[str, Any]] = None
-
-import tomllib  # Python 3.11+
+_config_cache: dict[str, Any] | None = None
 
 
 def expand_env_vars(value: str) -> str:
@@ -123,7 +122,7 @@ def load_toml_file(path: Path) -> dict[str, Any]:
     return data  # pyright: ignore[reportUnknownVariableType]
 
 
-def find_config_files() -> tuple[Optional[Path], Optional[Path]]:
+def find_config_files() -> tuple[Path | None, Path | None]:
     """Find configuration files in standard locations.
 
     Returns:

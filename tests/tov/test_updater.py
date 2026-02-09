@@ -1,9 +1,9 @@
 """Tests for file updater."""
 
+import shutil
+import tempfile
 import unittest
 from pathlib import Path
-import tempfile
-import shutil
 
 from quarto4sbp.tov.updater import create_backup, update_file
 

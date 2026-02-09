@@ -98,98 +98,106 @@ class TestFindConfigFiles(unittest.TestCase):
 
     def test_find_both_configs(self) -> None:
         """Test finding both user and local configs."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                # Create user config
-                config_dir = Path(tmpdir) / ".config"
-                config_dir.mkdir()
-                user_config_path = config_dir / "q4s.toml"
-                user_config_path.write_text("[user]\n")
+            # Create user config
+            config_dir = Path(tmpdir) / ".config"
+            config_dir.mkdir()
+            user_config_path = config_dir / "q4s.toml"
+            user_config_path.write_text("[user]\n")
 
-                # Create local config
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
-                        local_config_path = Path("q4s.toml")
-                        local_config_path.write_text("[local]\n")
+            # Create local config
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
+                    local_config_path = Path("q4s.toml")
+                    local_config_path.write_text("[local]\n")
 
-                        user_config, local_config = find_config_files()
+                    user_config, local_config = find_config_files()
 
-                        self.assertIsNotNone(user_config)
-                        self.assertIsNotNone(local_config)
-                        self.assertEqual(user_config, user_config_path)
-                        self.assertEqual(local_config, local_config_path)
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertIsNotNone(user_config)
+                    self.assertIsNotNone(local_config)
+                    self.assertEqual(user_config, user_config_path)
+                    self.assertEqual(local_config, local_config_path)
+            finally:
+                os.chdir(original_cwd)
 
     def test_find_only_user_config(self) -> None:
         """Test finding only user config."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                # Create user config
-                config_dir = Path(tmpdir) / ".config"
-                config_dir.mkdir()
-                user_config_path = config_dir / "q4s.toml"
-                user_config_path.write_text("[user]\n")
+            # Create user config
+            config_dir = Path(tmpdir) / ".config"
+            config_dir.mkdir()
+            user_config_path = config_dir / "q4s.toml"
+            user_config_path.write_text("[user]\n")
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
-                        # No local config
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
+                    # No local config
 
-                        user_config, local_config = find_config_files()
+                    user_config, local_config = find_config_files()
 
-                        self.assertIsNotNone(user_config)
-                        self.assertIsNone(local_config)
-                        self.assertEqual(user_config, user_config_path)
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertIsNotNone(user_config)
+                    self.assertIsNone(local_config)
+                    self.assertEqual(user_config, user_config_path)
+            finally:
+                os.chdir(original_cwd)
 
     def test_find_only_local_config(self) -> None:
         """Test finding only local config."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
-                # No user config
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
+            # No user config
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
-                        local_config_path = Path("q4s.toml")
-                        local_config_path.write_text("[local]\n")
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
+                    local_config_path = Path("q4s.toml")
+                    local_config_path.write_text("[local]\n")
 
-                        user_config, local_config = find_config_files()
+                    user_config, local_config = find_config_files()
 
-                        self.assertIsNone(user_config)
-                        self.assertIsNotNone(local_config)
-                        self.assertEqual(local_config, local_config_path)
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertIsNone(user_config)
+                    self.assertIsNotNone(local_config)
+                    self.assertEqual(local_config, local_config_path)
+            finally:
+                os.chdir(original_cwd)
 
     def test_find_no_configs(self) -> None:
         """Test when no config files exist."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        user_config, local_config = find_config_files()
+                    user_config, local_config = find_config_files()
 
-                        self.assertIsNone(user_config)
-                        self.assertIsNone(local_config)
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertIsNone(user_config)
+                    self.assertIsNone(local_config)
+            finally:
+                os.chdir(original_cwd)
 
 
 class TestLoadConfig(unittest.TestCase):
@@ -197,133 +205,143 @@ class TestLoadConfig(unittest.TestCase):
 
     def test_load_empty_config(self) -> None:
         """Test loading when no config files exist."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        config = load_config(cache=False)
+                    config = load_config(cache=False)
 
-                        self.assertEqual(config, {})
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertEqual(config, {})
+            finally:
+                os.chdir(original_cwd)
 
     def test_load_only_user_config(self) -> None:
         """Test loading only user config."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                # Create user config
-                config_dir = Path(tmpdir) / ".config"
-                config_dir.mkdir()
-                user_config_path = config_dir / "q4s.toml"
-                user_config_path.write_text("""
+            # Create user config
+            config_dir = Path(tmpdir) / ".config"
+            config_dir.mkdir()
+            user_config_path = config_dir / "q4s.toml"
+            user_config_path.write_text("""
 [section]
 key1 = "user_value1"
 key2 = "user_value2"
 """)
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        config = load_config(cache=False)
+                    config = load_config(cache=False)
 
-                        self.assertIn("section", config)
-                        self.assertEqual(config["section"]["key1"], "user_value1")
-                        self.assertEqual(config["section"]["key2"], "user_value2")
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertIn("section", config)
+                    self.assertEqual(config["section"]["key1"], "user_value1")
+                    self.assertEqual(config["section"]["key2"], "user_value2")
+            finally:
+                os.chdir(original_cwd)
 
     def test_load_only_local_config(self) -> None:
         """Test loading only local config."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        # Create local config
-                        local_config_path = Path("q4s.toml")
-                        local_config_path.write_text("""
+                    # Create local config
+                    local_config_path = Path("q4s.toml")
+                    local_config_path.write_text("""
 [section]
 key1 = "local_value1"
 key2 = "local_value2"
 """)
 
-                        config = load_config(cache=False)
+                    config = load_config(cache=False)
 
-                        self.assertIn("section", config)
-                        self.assertEqual(config["section"]["key1"], "local_value1")
-                        self.assertEqual(config["section"]["key2"], "local_value2")
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertIn("section", config)
+                    self.assertEqual(config["section"]["key1"], "local_value1")
+                    self.assertEqual(config["section"]["key2"], "local_value2")
+            finally:
+                os.chdir(original_cwd)
 
     def test_merge_user_and_local_configs(self) -> None:
         """Test that local config overrides user config."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                # Create user config
-                config_dir = Path(tmpdir) / ".config"
-                config_dir.mkdir()
-                user_config_path = config_dir / "q4s.toml"
-                user_config_path.write_text("""
+            # Create user config
+            config_dir = Path(tmpdir) / ".config"
+            config_dir.mkdir()
+            user_config_path = config_dir / "q4s.toml"
+            user_config_path.write_text("""
 [section]
 key1 = "user_value1"
 key2 = "user_value2"
 only_in_user = "user_only"
 """)
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        # Create local config that overrides some values
-                        local_config_path = Path("q4s.toml")
-                        local_config_path.write_text("""
+                    # Create local config that overrides some values
+                    local_config_path = Path("q4s.toml")
+                    local_config_path.write_text("""
 [section]
 key1 = "local_override"
 only_in_local = "local_only"
 """)
 
-                        config = load_config(cache=False)
+                    config = load_config(cache=False)
 
-                        self.assertIn("section", config)
-                        # Local overrides user
-                        self.assertEqual(config["section"]["key1"], "local_override")
-                        # User value preserved when not overridden
-                        self.assertEqual(config["section"]["key2"], "user_value2")
-                        # Values from both configs present
-                        self.assertEqual(config["section"]["only_in_user"], "user_only")
-                        self.assertEqual(
-                            config["section"]["only_in_local"], "local_only"
-                        )
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertIn("section", config)
+                    # Local overrides user
+                    self.assertEqual(config["section"]["key1"], "local_override")
+                    # User value preserved when not overridden
+                    self.assertEqual(config["section"]["key2"], "user_value2")
+                    # Values from both configs present
+                    self.assertEqual(config["section"]["only_in_user"], "user_only")
+                    self.assertEqual(
+                        config["section"]["only_in_local"], "local_only"
+                    )
+            finally:
+                os.chdir(original_cwd)
 
     def test_merge_nested_sections(self) -> None:
         """Test deep merging of nested sections."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                # Create user config with nested structure
-                config_dir = Path(tmpdir) / ".config"
-                config_dir.mkdir()
-                user_config_path = config_dir / "q4s.toml"
-                user_config_path.write_text("""
+            # Create user config with nested structure
+            config_dir = Path(tmpdir) / ".config"
+            config_dir.mkdir()
+            user_config_path = config_dir / "q4s.toml"
+            user_config_path.write_text("""
 [llm]
 model = "user-model"
 api_key = "user-key"
@@ -336,14 +354,14 @@ backoff_factor = 2
 value = "user"
 """)
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        # Create local config that partially overrides
-                        local_config_path = Path("q4s.toml")
-                        local_config_path.write_text("""
+                    # Create local config that partially overrides
+                    local_config_path = Path("q4s.toml")
+                    local_config_path.write_text("""
 [llm]
 model = "local-model"
 
@@ -351,56 +369,58 @@ model = "local-model"
 max_attempts = 5
 """)
 
-                        config = load_config(cache=False)
+                    config = load_config(cache=False)
 
-                        # Check that nested merging works correctly
-                        self.assertEqual(
-                            config["llm"]["model"], "local-model"
-                        )  # overridden
-                        self.assertEqual(
-                            config["llm"]["api_key"], "user-key"
-                        )  # preserved
-                        self.assertEqual(
-                            config["llm"]["retry"]["max_attempts"], 5
-                        )  # overridden
-                        self.assertEqual(
-                            config["llm"]["retry"]["backoff_factor"], 2
-                        )  # preserved
-                        self.assertEqual(
-                            config["other_section"]["value"], "user"
-                        )  # preserved
-                finally:
-                    os.chdir(original_cwd)
+                    # Check that nested merging works correctly
+                    self.assertEqual(
+                        config["llm"]["model"], "local-model"
+                    )  # overridden
+                    self.assertEqual(
+                        config["llm"]["api_key"], "user-key"
+                    )  # preserved
+                    self.assertEqual(
+                        config["llm"]["retry"]["max_attempts"], 5
+                    )  # overridden
+                    self.assertEqual(
+                        config["llm"]["retry"]["backoff_factor"], 2
+                    )  # preserved
+                    self.assertEqual(
+                        config["other_section"]["value"], "user"
+                    )  # preserved
+            finally:
+                os.chdir(original_cwd)
 
     def test_env_var_expansion(self) -> None:
         """Test that environment variables are expanded."""
         os.environ["TEST_API_KEY"] = "expanded-key-123"
         try:
-            with patch("pathlib.Path.home") as mock_home:
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    mock_home.return_value = Path(tmpdir)
+            with (
+                patch("pathlib.Path.home") as mock_home,
+                tempfile.TemporaryDirectory() as tmpdir,
+            ):
+                mock_home.return_value = Path(tmpdir)
 
-                    original_cwd = os.getcwd()
-                    try:
-                        with tempfile.TemporaryDirectory() as local_dir:
-                            os.chdir(local_dir)
+                original_cwd = os.getcwd()
+                try:
+                    with tempfile.TemporaryDirectory() as local_dir:
+                        os.chdir(local_dir)
 
-                            # Create config with env var
-                            local_config_path = Path("q4s.toml")
-                            local_config_path.write_text("""
+                        # Create config with env var
+                        local_config_path = Path("q4s.toml")
+                        local_config_path.write_text("""
 [llm]
 api_key = "${TEST_API_KEY}"
 model = "gpt-4"
 """)
 
-                            config = load_config(expand_vars=True, cache=False)
+                        config = load_config(expand_vars=True, cache=False)
 
-                            self.assertEqual(
-                                config["llm"]["api_key"], "expanded-key-123"
-                            )
-                            self.assertEqual(config["llm"]["model"], "gpt-4")
-                    finally:
-                        os.chdir(original_cwd)
+                        self.assertEqual(
+                            config["llm"]["api_key"], "expanded-key-123"
+                        )
+                        self.assertEqual(config["llm"]["model"], "gpt-4")
+                finally:
+                    os.chdir(original_cwd)
         finally:
             del os.environ["TEST_API_KEY"]
 
@@ -408,84 +428,90 @@ model = "gpt-4"
         """Test that env var expansion can be disabled."""
         os.environ["TEST_VAR"] = "should-not-expand"
         try:
-            with patch("pathlib.Path.home") as mock_home:
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    mock_home.return_value = Path(tmpdir)
+            with (
+                patch("pathlib.Path.home") as mock_home,
+                tempfile.TemporaryDirectory() as tmpdir,
+            ):
+                mock_home.return_value = Path(tmpdir)
 
-                    original_cwd = os.getcwd()
-                    try:
-                        with tempfile.TemporaryDirectory() as local_dir:
-                            os.chdir(local_dir)
+                original_cwd = os.getcwd()
+                try:
+                    with tempfile.TemporaryDirectory() as local_dir:
+                        os.chdir(local_dir)
 
-                            local_config_path = Path("q4s.toml")
-                            local_config_path.write_text("""
+                        local_config_path = Path("q4s.toml")
+                        local_config_path.write_text("""
 [section]
 value = "${TEST_VAR}"
 """)
 
-                            config = load_config(expand_vars=False, cache=False)
+                        config = load_config(expand_vars=False, cache=False)
 
-                            self.assertEqual(config["section"]["value"], "${TEST_VAR}")
-                    finally:
-                        os.chdir(original_cwd)
+                        self.assertEqual(config["section"]["value"], "${TEST_VAR}")
+                finally:
+                    os.chdir(original_cwd)
         finally:
             del os.environ["TEST_VAR"]
 
     def test_invalid_user_config_ignored(self) -> None:
         """Test that invalid user config is gracefully ignored."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                # Create invalid user config
-                config_dir = Path(tmpdir) / ".config"
-                config_dir.mkdir()
-                user_config_path = config_dir / "q4s.toml"
-                user_config_path.write_text("invalid [[[toml")
+            # Create invalid user config
+            config_dir = Path(tmpdir) / ".config"
+            config_dir.mkdir()
+            user_config_path = config_dir / "q4s.toml"
+            user_config_path.write_text("invalid [[[toml")
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        # Valid local config
-                        local_config_path = Path("q4s.toml")
-                        local_config_path.write_text('[section]\nkey = "value"\n')
+                    # Valid local config
+                    local_config_path = Path("q4s.toml")
+                    local_config_path.write_text('[section]\nkey = "value"\n')
 
-                        # Should not raise, should use local config
-                        config = load_config(cache=False)
+                    # Should not raise, should use local config
+                    config = load_config(cache=False)
 
-                        self.assertEqual(config["section"]["key"], "value")
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertEqual(config["section"]["key"], "value")
+            finally:
+                os.chdir(original_cwd)
 
     def test_invalid_local_config_ignored(self) -> None:
         """Test that invalid local config is gracefully ignored."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                # Create valid user config
-                config_dir = Path(tmpdir) / ".config"
-                config_dir.mkdir()
-                user_config_path = config_dir / "q4s.toml"
-                user_config_path.write_text('[section]\nkey = "user_value"\n')
+            # Create valid user config
+            config_dir = Path(tmpdir) / ".config"
+            config_dir.mkdir()
+            user_config_path = config_dir / "q4s.toml"
+            user_config_path.write_text('[section]\nkey = "user_value"\n')
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        # Invalid local config
-                        local_config_path = Path("q4s.toml")
-                        local_config_path.write_text("invalid [[[toml")
+                    # Invalid local config
+                    local_config_path = Path("q4s.toml")
+                    local_config_path.write_text("invalid [[[toml")
 
-                        # Should not raise, should use user config
-                        config = load_config(cache=False)
+                    # Should not raise, should use user config
+                    config = load_config(cache=False)
 
-                        self.assertEqual(config["section"]["key"], "user_value")
-                finally:
-                    os.chdir(original_cwd)
+                    self.assertEqual(config["section"]["key"], "user_value")
+            finally:
+                os.chdir(original_cwd)
 
 
 class TestConfigCaching(unittest.TestCase):
@@ -501,99 +527,105 @@ class TestConfigCaching(unittest.TestCase):
 
     def test_config_is_cached_by_default(self) -> None:
         """Test that config is cached on first load."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        # Create config
-                        config_path = Path("q4s.toml")
-                        config_path.write_text('[section]\nkey = "value1"\n')
+                    # Create config
+                    config_path = Path("q4s.toml")
+                    config_path.write_text('[section]\nkey = "value1"\n')
 
-                        # First load
-                        config1 = load_config(cache=True)
-                        self.assertEqual(config1["section"]["key"], "value1")
+                    # First load
+                    config1 = load_config(cache=True)
+                    self.assertEqual(config1["section"]["key"], "value1")
 
-                        # Modify file
-                        config_path.write_text('[section]\nkey = "value2"\n')
+                    # Modify file
+                    config_path.write_text('[section]\nkey = "value2"\n')
 
-                        # Second load should return cached value
-                        config2 = load_config(cache=True)
-                        self.assertEqual(
-                            config2["section"]["key"], "value1"
-                        )  # Still cached
+                    # Second load should return cached value
+                    config2 = load_config(cache=True)
+                    self.assertEqual(
+                        config2["section"]["key"], "value1"
+                    )  # Still cached
 
-                        # Should be same object
-                        self.assertIs(config1, config2)
-                finally:
-                    os.chdir(original_cwd)
+                    # Should be same object
+                    self.assertIs(config1, config2)
+            finally:
+                os.chdir(original_cwd)
 
     def test_cache_false_reloads_config(self) -> None:
         """Test that cache=False forces reload."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        # Create config
-                        config_path = Path("q4s.toml")
-                        config_path.write_text('[section]\nkey = "value1"\n')
+                    # Create config
+                    config_path = Path("q4s.toml")
+                    config_path.write_text('[section]\nkey = "value1"\n')
 
-                        # First load
-                        config1 = load_config(cache=True)
-                        self.assertEqual(config1["section"]["key"], "value1")
+                    # First load
+                    config1 = load_config(cache=True)
+                    self.assertEqual(config1["section"]["key"], "value1")
 
-                        # Modify file
-                        config_path.write_text('[section]\nkey = "value2"\n')
+                    # Modify file
+                    config_path.write_text('[section]\nkey = "value2"\n')
 
-                        # Load with cache=False should get new value
-                        config2 = load_config(cache=False)
-                        self.assertEqual(config2["section"]["key"], "value2")
+                    # Load with cache=False should get new value
+                    config2 = load_config(cache=False)
+                    self.assertEqual(config2["section"]["key"], "value2")
 
-                        # Should be different objects
-                        self.assertIsNot(config1, config2)
-                finally:
-                    os.chdir(original_cwd)
+                    # Should be different objects
+                    self.assertIsNot(config1, config2)
+            finally:
+                os.chdir(original_cwd)
 
     def test_clear_cache_reloads_next_time(self) -> None:
         """Test that clear_config_cache() forces next load to reload."""
-        with patch("pathlib.Path.home") as mock_home:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                mock_home.return_value = Path(tmpdir)
+        with (
+            patch("pathlib.Path.home") as mock_home,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            mock_home.return_value = Path(tmpdir)
 
-                original_cwd = os.getcwd()
-                try:
-                    with tempfile.TemporaryDirectory() as local_dir:
-                        os.chdir(local_dir)
+            original_cwd = os.getcwd()
+            try:
+                with tempfile.TemporaryDirectory() as local_dir:
+                    os.chdir(local_dir)
 
-                        # Create config
-                        config_path = Path("q4s.toml")
-                        config_path.write_text('[section]\nkey = "value1"\n')
+                    # Create config
+                    config_path = Path("q4s.toml")
+                    config_path.write_text('[section]\nkey = "value1"\n')
 
-                        # First load
-                        config1 = load_config(cache=True)
-                        self.assertEqual(config1["section"]["key"], "value1")
+                    # First load
+                    config1 = load_config(cache=True)
+                    self.assertEqual(config1["section"]["key"], "value1")
 
-                        # Modify file and clear cache
-                        config_path.write_text('[section]\nkey = "value2"\n')
-                        clear_config_cache()
+                    # Modify file and clear cache
+                    config_path.write_text('[section]\nkey = "value2"\n')
+                    clear_config_cache()
 
-                        # Next load should get new value
-                        config2 = load_config(cache=True)
-                        self.assertEqual(config2["section"]["key"], "value2")
+                    # Next load should get new value
+                    config2 = load_config(cache=True)
+                    self.assertEqual(config2["section"]["key"], "value2")
 
-                        # Should be different objects
-                        self.assertIsNot(config1, config2)
-                finally:
-                    os.chdir(original_cwd)
+                    # Should be different objects
+                    self.assertIsNot(config1, config2)
+            finally:
+                os.chdir(original_cwd)
 
 
 if __name__ == "__main__":
