@@ -1,5 +1,7 @@
 # Agent Instructions for quarto4sbp
 
+> This file (`AGENTS.md`) is the canonical agent configuration. `CLAUDE.md` is a symlink to this file.
+
 Python tool for [Quarto](https://quarto.org/) workflows at Schuberg Philis. Creates projects from templates and automates PDF export via AppleScript.
 
 ## Quick Reference
